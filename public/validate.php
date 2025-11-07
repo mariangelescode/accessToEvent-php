@@ -1,6 +1,6 @@
 <?php
 // validate.php
-$config = require __DIR__ . '/../config.php';
+$config = require __DIR__ . '/../../config.php';
 
 $mysqli = new mysqli($config->db_host, $config->db_user, $config->db_pass, $config->db_name);
 if ($mysqli->connect_errno) {
