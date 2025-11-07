@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Subir Excel/CSV y generar boletos</title>
+<title>Subir Excel/CSV y generar boletossss</title>
 </head>
 <body>
   <h1>Sube tu archivo CSV (usuario,nombre,centro)</h1>
