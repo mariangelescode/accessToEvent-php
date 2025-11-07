@@ -1,7 +1,7 @@
 <?php
 // TicketModel.php
 
-require_once __DIR__ . '/../../vendor/autoload.php'; // vendor un nivel arriba
+require_once __DIR__ . '/../../../vendor/autoload.php'; // vendor un nivel arriba
 
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
