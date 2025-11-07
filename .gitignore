@@ -6,3 +6,4 @@ storage/qr/
 .idea/
 .vscode/
 .DS_Store
+config.php
