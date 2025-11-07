@@ -5,11 +5,14 @@ class UploadController {
     private $model;
 
     public function __construct() {
-        // $config = require __DIR__ . '/../../../../config.php';
-        $configPath = realpath(__DIR__ . '/../../../../config.php');
+        // Intentar localizar config.php en varias rutas posibles
+        $configPath = __DIR__ . '/../../../../config.php'; // relativo desde app/controllers
+        if (!file_exists($configPath)) {
+            $configPath = __DIR__ . '/../../../config.php'; // prueba otra ruta
+        }
 
-        if (!$configPath || !file_exists($configPath)) {
-            die('Error: No se encontró el archivo config.php');
+        if (!file_exists($configPath)) {
+            die("Error: No se encontró el archivo config.php");
         }
 
         $config = require $configPath;
