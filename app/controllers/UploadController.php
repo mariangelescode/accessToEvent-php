@@ -5,7 +5,14 @@ class UploadController {
     private $model;
 
     public function __construct() {
-        $config = require __DIR__ . '/../../../../config.php';
+        // $config = require __DIR__ . '/../../../../config.php';
+        $configPath = realpath(__DIR__ . '/../../../config.php');
+
+        if (!$configPath || !file_exists($configPath)) {
+            die('Error: No se encontró el archivo config.php');
+        }
+
+        $config = require $configPath;
         $this->model = new TicketModel($config);
     }
 
