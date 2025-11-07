@@ -5,7 +5,7 @@ class UploadController {
     private $model;
 
     public function __construct() {
-        $config = require __DIR__ . '/../../../config.php';
+        $config = require __DIR__ . '/../../../../config.php';
         $this->model = new TicketModel($config);
     }
 
