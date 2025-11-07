@@ -7,7 +7,7 @@ class UploadController {
 
     public function __construct() {
         // Carga del .env que está fuera de access
-        $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 3)); 
+        $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2)); 
 
 
         $dotenv->load();
