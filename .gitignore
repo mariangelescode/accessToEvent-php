@@ -1,0 +1,8 @@
+/vendor/
+storage/pdf/
+storage/qr/
+.env
+*.log
+.idea/
+.vscode/
+.DS_Store
