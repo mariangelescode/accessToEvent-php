@@ -1,9 +1,7 @@
 {
     "require": {
         "endroid/qr-code": "^4.8",
-        "setasign/fpdf": "^1.8"
-    },
-    "config": {
-        "vendor-dir": "access/vendor"
+        "setasign/fpdf": "^1.8",
+        "vlucas/phpdotenv": "^5.6"
     }
 }

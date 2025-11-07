@@ -6,7 +6,7 @@ class ValidateController {
 
     public function __construct() {
         // Intentar localizar config.php en varias rutas posibles
-        $configPath = __DIR__ . '/../../../../config.php'; // relativo desde app/controllers
+        $configPath = __DIR__ . '/../../../config.php'; // relativo desde app/controllers
         if (!file_exists($configPath)) {
             $configPath = __DIR__ . '/../../../config.php'; // prueba otra ruta
         }
