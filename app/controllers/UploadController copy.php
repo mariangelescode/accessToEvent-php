@@ -1,15 +1,18 @@
 <?php
-require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php'; // cargar autoload
 require_once __DIR__ . '/../models/TicketModel.php';
 
 class UploadController {
-
     private $model;
 
     public function __construct() {
-        $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 3));
+        // Carga del .env que está fuera de access
+        $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 3)); 
+
+
         $dotenv->load();
 
+        // Obtiene la ruta del config desde la variable de entorno
         $configPath = $_ENV['CONFIG_PATH'];
 
         if (!file_exists($configPath)) {
@@ -17,13 +20,8 @@ class UploadController {
         }
 
         $config = require $configPath;
-
-        // 🔥 FIX IMPORTANTE
-        $config = (array) $config;
-
         $this->model = new TicketModel($config);
     }
-
 
     public function processFile() {
         if (!isset($_FILES['csv_file'])) {
@@ -31,10 +29,8 @@ class UploadController {
         }
 
         $file = $_FILES['csv_file']['tmp_name'];
-
         $pdfFile = $this->model->createTicketsFromCSV($file);
 
-        echo "Tickets generados correctamente. 
-              <a href='/access/storage/pdf/" . basename($pdfFile) . "' target='_blank'>Abrir PDF</a>";
+        echo "Tickets generados correctamente. <a href='/access/storage/pdf/" . basename($pdfFile) . "' target='_blank'>Descargar PDF</a>";
     }
 }

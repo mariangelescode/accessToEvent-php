@@ -15,10 +15,6 @@ class TicketModel {
     private $storagePdf;
 
     public function __construct($config) {
-
-        // -----------------------------------------
-        // CONEXIÓN MYSQL
-        // -----------------------------------------
         $this->mysqli = new mysqli(
             $config['db_host'] ?? $config->db_host ?? '',
             $config['db_user'] ?? $config->db_user ?? '',
@@ -29,12 +25,8 @@ class TicketModel {
         if ($this->mysqli->connect_errno) {
             throw new Exception("Error MySQL: " . $this->mysqli->connect_error);
         }
-
         $this->mysqli->set_charset("utf8mb4");
 
-        // -----------------------------------------
-        // RUTAS STORAGE
-        // -----------------------------------------
         $this->storageQr  = $config['storage_qr']  ?? __DIR__ . '/../../storage/qr';
         $this->storagePdf = $config['storage_pdf'] ?? __DIR__ . '/../../storage/pdf';
 
@@ -48,53 +40,51 @@ class TicketModel {
             throw new Exception("CSV no encontrado: $csvFile");
         }
 
-        // ----------------------------------------------------------------
-        //  LEER CSV
-        // ----------------------------------------------------------------
+        // Leer CSV
         $rows = [];
         if (($handle = fopen($csvFile, "r")) !== false) {
             while (($data = fgetcsv($handle, 10000, ",")) !== false) {
-
                 $allEmpty = true;
                 foreach ($data as $c) {
                     if (trim((string)$c) !== '') { $allEmpty = false; break; }
                 }
                 if ($allEmpty) continue;
-
                 $rows[] = $data;
             }
             fclose($handle);
         }
 
-        // ----------------------------------------------------------------
-        //  CONFIGURAR PDF – TAMAÑO CARTA (Letter)
-        // ----------------------------------------------------------------
+        // PDF
         $pdf = new \FPDF('P', 'mm', 'LETTER');
         $pdf->SetMargins(0, 0, 0);
         $pdf->SetAutoPageBreak(false);
-        $pdf->AddPage();
 
-        // ----------------------------------------------------------------
-        //  LAYOUT SIN ESPACIOS – 12 BOLETOS POR PÁGINA
-        // ----------------------------------------------------------------
-        $ticketWidth  = 50;   // ↔ ancho boleto
-        $ticketHeight = 85;   // ↕ alto boleto
+        // ----------------------------------------------
+        //  🔵 NUEVO LAYOUT — 12 BOLETOS 50×85 mm
+        //  🔵 SIN ESPACIO ENTRE BOLETOS
+        // ----------------------------------------------
 
-        // 4 columnas exactas (50mm cada una + 5mm de margen inicial)
-        $colX = [5, 55, 105, 155];
+        $ticketWidth  = 50;
+        $ticketHeight = 85;
 
-        // 3 filas exactas
-        $rowY = [5, 90, 175];
+        // 3 columnas exactas sin separación
+        $colX = [5, 55, 105];   // Ajustado para LETTER (216 mm)
+
+        // 4 filas exactas sin separación
+        $rowY = [5, 90, 175, 260];  // 4 filas de 85 mm (5 + 85 + 85 + 85 = 260)
 
         $i = 0;
 
-        foreach ($rows as $r) {
+        // Comenzar página
+        $pdf->AddPage();
+
+        foreach ($rows as $rIndex => $r) {
 
             $user   = isset($r[0]) ? trim((string)$r[0]) : '';
             $name   = isset($r[1]) ? trim((string)$r[1]) : '';
             $center = isset($r[2]) ? trim((string)$r[2]) : '';
 
-            // Guardar en DB
+            // Guardar DB
             if ($user !== '' || $name !== '') {
                 $stmt = $this->mysqli->prepare("INSERT INTO tickets(user, name, center) VALUES(?,?,?)");
                 if ($stmt) {
@@ -104,11 +94,8 @@ class TicketModel {
                 }
             }
 
-            // ----------------------------------------------------------------
-            //  GENERAR QR
-            // ----------------------------------------------------------------
+            // QR
             $qrData = trim("$user|$name|$center");
-
             $builder = new Builder();
             $result = $builder
                 ->writer(new PngWriter())
@@ -120,13 +107,11 @@ class TicketModel {
             $qrFile = $this->storageQr . "/qr_$i.png";
             $result->saveToFile($qrFile);
 
-            // ----------------------------------------------------------------
-            //  CALCULAR POSICIÓN (4 columnas × 3 filas)
-            // ----------------------------------------------------------------
-            $col = $i % 4;              // 0–3
-            $row = intdiv($i % 12, 4);  // 0–2
+            // Calcular posición por índice
+            $col = $i % 3;
+            $row = intdiv($i % 12, 3);
 
-            // Cambiar página cada 12 boletos
+            // Si empieza una nueva página
             if ($i > 0 && $i % 12 == 0) {
                 $pdf->AddPage();
             }
@@ -134,44 +119,31 @@ class TicketModel {
             $x = $colX[$col];
             $y = $rowY[$row];
 
-            // ----------------------------------------------------------------
-            //  PLANTILLA DEL BOLETO
-            // ----------------------------------------------------------------
+            // Plantilla
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
 
-            // ----------------------------------------------------------------
-            //  POSICIÓN QR CENTRADO
-            // ----------------------------------------------------------------
+            // QR centrado
             $qrSize = 28;
             $qrX = $x + ($ticketWidth / 2) - ($qrSize / 2);
             $qrY = $y + 28;
 
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
-            // ----------------------------------------------------------------
-            //  TEXTO DEL TITULAR
-            // ----------------------------------------------------------------
+            // Texto del ticket
             $pdf->SetFont('Arial', 'I', 7);
             $pdf->SetTextColor(0, 0, 0);
 
-            // Texto del nombre 30 px más arriba
-            $pdf->SetXY($x, $y + $ticketHeight - 25);
+            $pdf->SetXY($x, $y + $ticketHeight - 12);
             $pdf->Cell($ticketWidth, 4, iconv('UTF-8','ISO-8859-1//TRANSLIT', $name ?: '-'), 0, 1, 'C');
 
             // Eliminar QR temporal
             if (file_exists($qrFile)) @unlink($qrFile);
 
             $i++;
-
-
         }
 
-        // ----------------------------------------------------------------
-        //  GUARDAR PDF FINAL
-        // ----------------------------------------------------------------
-        if (!is_dir($this->storagePdf)) mkdir($this->storagePdf, 0777, true);
-
+        // Guardar PDF
         $pdfFile = $this->storagePdf . '/boletos.pdf';
         $pdf->Output('F', $pdfFile);
 

@@ -1,0 +1,68 @@
+/* Color Theme Swatches in Hex */
+:root{
+    --primary: #2F3D59;
+    --secondary: #6374A6;
+    --light: #F2D49B;
+    --white: #fff;
+}
+/* 
+.Fondo-navideño-de-navidad-con-decoración-2-hex { color: #282E40; }
+.Fondo-navideño-de-navidad-con-decoración-5-hex { color: #A68160; } */
+
+body{
+    background-color: var(--primary);
+    color: var(--white);
+}
+
+.center{
+    text-align: center;
+}
+
+form{
+    height: 200px;
+    border: 2px dashed var(--white);
+    text-align: center;
+    padding: 20px;
+    width: 50%;
+    margin: 0 auto;
+}
+
+
+.pointer{
+    cursor: pointer;
+}
+
+.btn-primary{
+    background-color: var(--secondary);
+    color: var(--white);
+    border-radius: 10px;
+    padding: 20px;
+    border: none;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.instructions{
+    font-size: 1em;
+    color: var(--light);
+    text-align: center;
+}
+
+
+/* Validate */
+.title__validate{
+    font-size: 3em;
+    text-align: center;
+}
+
+#reader{
+    width: 80%;
+    margin: 0 auto;
+}
+
+#reader video{
+    width: 80%;
+    display: block;
+    margin: 0 auto;
+}
+

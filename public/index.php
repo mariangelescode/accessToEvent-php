@@ -7,6 +7,11 @@ switch ($page) {
         $controller = new ValidateController();
         $controller->index(); // método principal del lector QR
         break;
+    case 'validate_check':
+        require_once __DIR__ . '/../app/controllers/ValidateController.php';
+        $controller = new ValidateController();
+        $controller->check(); // nuevo método para procesar el QR
+        break;
 
     default:
         require_once __DIR__ . '/../app/controllers/UploadController.php';
