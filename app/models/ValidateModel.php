@@ -18,7 +18,7 @@ class ValidateModel {
     }
 
     public function findTicket($user) {
-        $stmt = $this->mysqli->prepare("SELECT user, name, center FROM tickets WHERE user = ?");
+        $stmt = $this->mysqli->prepare("SELECT sap, name, center FROM tickets WHERE sap = ?");
         $stmt->bind_param("s", $user);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
