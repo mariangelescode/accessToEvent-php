@@ -5,17 +5,32 @@ class ValidateController {
     private $model;
 
     public function __construct() {
-        // Intentar localizar config.php en varias rutas posibles
-        $configPath = __DIR__ . '/../../config.php'; // relativo desde app/controllers
-        if (!file_exists($configPath)) {
-            $configPath = __DIR__ . '/../../../config.php'; // prueba otra ruta
+
+        // -----------------------------------------
+        // CARGAR VARIABLES .env
+        // -----------------------------------------
+        $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2)); 
+        $dotenv->load();
+
+        if (!isset($_ENV['CONFIG_PATH'])) {
+            die("ERROR: No existe CONFIG_PATH en el .env");
         }
 
+        // -----------------------------------------
+        // CARGAR CONFIG.PHP DESDE RUTA DEFINIDA EN .env
+        // -----------------------------------------
+        $configPath = $_ENV['CONFIG_PATH'];
+
         if (!file_exists($configPath)) {
-            die("Error: No se encontró el archivo config.php");
+            die("Error: No se encontró el archivo config.php en $configPath");
         }
 
         $config = require $configPath;
+
+        // Convertir objeto → array
+        $config = (array) $config;
+
+        // Crear modelo
         $this->model = new ValidateModel($config);
     }
 
@@ -32,7 +47,7 @@ class ValidateController {
             return;
         }
 
-        // El QR contiene "user | name | center"
+        // El QR contiene: user | name | center
         [$user, $name, $center] = array_map('trim', explode('|', $qr));
 
         $ticket = $this->model->findTicket($user);
@@ -51,7 +66,9 @@ class ValidateController {
             return;
         }
 
+        // Registrar asistencia
         $this->model->registerUser($user, $ticket['name'], $ticket['center']);
+
         echo json_encode([
             "status" => "success",
             "message" => "✅ Usuario registrado correctamente",
