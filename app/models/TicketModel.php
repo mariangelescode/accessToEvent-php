@@ -139,11 +139,11 @@ class TicketModel {
             // ----------------------------------------------------------------
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
             
-
-            $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
-            if (!file_exists($qrFile)) {
+if (!file_exists($qrFile)) {
                 echo("NO SE CREÓ EL QR → $qrFile");
             }
+            $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
+            
 
 
             // ----------------------------------------------------------------
