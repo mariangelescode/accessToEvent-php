@@ -35,8 +35,11 @@ class TicketModel {
         // -----------------------------------------
         // RUTAS STORAGE
         // -----------------------------------------
-        $this->storageQr  = $config['storage_qr']  ?? __DIR__ . '/../../storage/qr';
-        $this->storagePdf = $config['storage_pdf'] ?? __DIR__ . '/../../storage/pdf';
+        // $this->storageQr  = $config['storage_qr']  ?? __DIR__ . '/../../storage/qr';
+        // $this->storagePdf = $config['storage_pdf'] ?? __DIR__ . '/../../storage/pdf';
+        $this->storageQr = __DIR__ . '/../../storage/qr';
+        $this->storagePdf = __DIR__ . '/../../storage/pdf';
+
 
         if (!is_dir($this->storageQr)) mkdir($this->storageQr, 0777, true);
         if (!is_dir($this->storagePdf)) mkdir($this->storagePdf, 0777, true);
@@ -139,9 +142,7 @@ class TicketModel {
             // ----------------------------------------------------------------
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
             
-if (!file_exists($qrFile)) {
-                echo("NO SE CREÓ EL QR → $qrFile");
-            }
+
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
             
 
