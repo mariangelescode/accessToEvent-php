@@ -27,7 +27,7 @@ class ValidateModel {
     }
 
     public function alreadyRegistered($user) {
-        $stmt = $this->mysqli->prepare("SELECT id FROM registro WHERE user = ?");
+        $stmt = $this->mysqli->prepare("SELECT id FROM registro WHERE sap = ?");
         $stmt->bind_param("s", $user);
         $stmt->execute();
         $exists = $stmt->get_result()->num_rows > 0;
@@ -36,7 +36,7 @@ class ValidateModel {
     }
 
     public function registerUser($user, $name, $center) {
-        $stmt = $this->mysqli->prepare("INSERT INTO registro(user, name, center) VALUES(?,?,?)");
+        $stmt = $this->mysqli->prepare("INSERT INTO registro(sap, name, center) VALUES(?,?,?)");
         $stmt->bind_param("sss", $user, $name, $center);
         $stmt->execute();
         $stmt->close();
