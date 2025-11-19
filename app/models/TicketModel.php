@@ -140,6 +140,8 @@ class TicketModel {
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
             if (!file_exists($plantilla)) {
                 echo("NO EXISTE: $plantilla");
+            }else{
+                echo("si EXISTE: $plantilla");
             }
 
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
