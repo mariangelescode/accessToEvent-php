@@ -5,18 +5,21 @@ class ValidateController {
     private $model;
 
     public function __construct() {
-        // Intentar localizar config.php en varias rutas posibles
-        $configPath = __DIR__ . '/../../../config.php'; // relativo desde app/controllers
-        if (!file_exists($configPath)) {
-            $configPath = __DIR__ . '/../../../config.php'; // prueba otra ruta
-        }
+        $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2));
+        $dotenv->load();
+
+        $configPath = $_ENV['CONFIG_PATH'];
 
         if (!file_exists($configPath)) {
-            die("Error: No se encontró el archivo config.php");
+            die("Error: No se encontró el archivo config.php en $configPath");
         }
 
         $config = require $configPath;
-        $this->model = new ValidateModel($config);
+
+        // 🔥 FIX IMPORTANTE
+        $config = (array) $config;
+
+        $this->model = new TicketModel($config);
     }
 
     public function index() {
