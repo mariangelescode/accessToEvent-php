@@ -37,8 +37,8 @@ class TicketModel {
         // -----------------------------------------
         // $this->storageQr  = $config['storage_qr']  ?? __DIR__ . '/../../storage/qr';
         // $this->storagePdf = $config['storage_pdf'] ?? __DIR__ . '/../../storage/pdf';
-        $this->storageQr = __DIR__ . '/../storage/qr';
-        $this->storagePdf = __DIR__ . '/../storage/pdf';
+        $this->storageQr = __DIR__ . '/../../storage/qr';
+        $this->storagePdf = __DIR__ . '/../../storage/pdf';
 
 
         if (!is_dir($this->storageQr)) mkdir($this->storageQr, 0777, true);
