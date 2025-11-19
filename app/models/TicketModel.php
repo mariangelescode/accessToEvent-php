@@ -138,13 +138,13 @@ class TicketModel {
             //  PLANTILLA DEL BOLETO
             // ----------------------------------------------------------------
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
-            if (!file_exists($plantilla)) {
-                echo("NO EXISTE: $plantilla");
-            }else{
-                echo("si EXISTE: $plantilla");
-            }
+            
 
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
+            if (!file_exists($qrFile)) {
+                echo("NO SE CREÓ EL QR → $qrFile");
+            }
+
 
             // ----------------------------------------------------------------
             //  POSICIÓN QR CENTRADO
