@@ -5,14 +5,27 @@ require_once __DIR__ . '/../models/TicketModel.php';
 class UploadController {
     private $model;
 
+    // public function __construct() {
+    //     // Carga del .env que está fuera de access
+    //     $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2)); 
+
+
+    //     $dotenv->load();
+
+    //     // Obtiene la ruta del config desde la variable de entorno
+    //     $configPath = $_ENV['CONFIG_PATH'];
+
+    //     if (!file_exists($configPath)) {
+    //         die("Error: No se encontró el archivo config.php en $configPath");
+    //     }
+
+    //     $config = require $configPath;
+    //     $this->model = new TicketModel($config);
+    // }
     public function __construct() {
-        // Carga del .env que está fuera de access
-        $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2)); 
-
-
+        $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2));
         $dotenv->load();
 
-        // Obtiene la ruta del config desde la variable de entorno
         $configPath = $_ENV['CONFIG_PATH'];
 
         if (!file_exists($configPath)) {
@@ -20,6 +33,10 @@ class UploadController {
         }
 
         $config = require $configPath;
+
+        // 🔥 FIX IMPORTANTE
+        $config = (array) $config;
+
         $this->model = new TicketModel($config);
     }
 
