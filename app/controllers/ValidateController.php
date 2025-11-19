@@ -28,13 +28,16 @@ class ValidateController {
             die("Error: No se encontró el archivo config.php en $configPath");
         }
 
+        // $config = require $configPath;
+
+        // // Convertir objeto → array
+        // $config = (array) $config;
+
+        // // Crear modelo
+        // $this->model = new ValidateModel($config);
         $config = require $configPath;
-
-        // Convertir objeto → array
-        $config = (array) $config;
-
-        // Crear modelo
         $this->model = new ValidateModel($config);
+
     }
 
     public function index() {
