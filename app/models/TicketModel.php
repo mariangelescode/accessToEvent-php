@@ -96,7 +96,7 @@ class TicketModel {
 
             // Guardar en DB
             if ($user !== '' || $name !== '') {
-                $stmt = $this->mysqli->prepare("INSERT INTO tickets(user, name, center) VALUES(?,?,?)");
+                $stmt = $this->mysqli->prepare("INSERT INTO tickets(sap, name, center) VALUES(?,?,?)");
                 if ($stmt) {
                     $stmt->bind_param("sss", $user, $name, $center);
                     $stmt->execute();
