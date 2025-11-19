@@ -14,14 +14,15 @@ class ValidateController {
         $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2)); 
         $dotenv->load();
 
-        if (!isset($_ENV['CONFIG_PATH'])) {
-            die("ERROR: No existe CONFIG_PATH en el .env");
+        $configPath = $_ENV['CONFIG_PATH'];
+
+        if (!file_exists($configPath)) {
+            die("Error: No se encontró el archivo config.php en $configPath");
         }
 
         // -----------------------------------------
         // CARGAR CONFIG.PHP DESDE RUTA DEFINIDA EN .env
         // -----------------------------------------
-        $configPath = $_ENV['CONFIG_PATH'];
 
         if (!file_exists($configPath)) {
             die("Error: No se encontró el archivo config.php en $configPath");
