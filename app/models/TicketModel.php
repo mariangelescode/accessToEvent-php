@@ -138,6 +138,10 @@ class TicketModel {
             //  PLANTILLA DEL BOLETO
             // ----------------------------------------------------------------
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
+            if (!file_exists($plantilla)) {
+                die("NO EXISTE: $plantilla");
+            }
+
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
 
             // ----------------------------------------------------------------
