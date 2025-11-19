@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../vendor/autoload.php'; // cargar autoload
+
 require_once __DIR__ . '/../models/ValidateModel.php';
 
 class ValidateController {
