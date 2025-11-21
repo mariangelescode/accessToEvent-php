@@ -54,34 +54,18 @@ class TicketModel {
         $line1 = "";
         $line2 = "";
 
-        // Construir línea 1
-        foreach ($words as $i => $w) {
+        foreach ($words as $w) {
             $try = trim($line1 . " " . $w);
 
             if ($pdf->GetStringWidth($try) <= $maxWidth) {
                 $line1 = $try;
             } else {
-                $remainingWords = array_slice($words, $i);
-                break;
-            }
-        }
-
-        // Construir línea 2 con lo que sobra
-        if (!empty($remainingWords)) {
-            foreach ($remainingWords as $w) {
-                $try = trim($line2 . " " . $w);
-
-                if ($pdf->GetStringWidth($try) <= $maxWidth) {
-                    $line2 = $try;
-                } else {
-                    break;
-                }
+                $line2 .= $w . " ";
             }
         }
 
         return [trim($line1), trim($line2)];
     }
-
 
     // --------------------------------------------------------------------
     // GENERAR BOLETOS DESDE CSV
@@ -185,59 +169,46 @@ class TicketModel {
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
             // ------------------------------------------------------------
-            // NOMBRE (2 líneas máx, centrado, sin desbordes)
+            // NOMBRE (2 líneas máximo, centrado, 2 cm más abajo del QR)
             // ------------------------------------------------------------
-            // ------------------------------------------------------------
-// NOMBRE (máximo 3 líneas reales sin desbordar NUNCA)
-// ------------------------------------------------------------
-$maxWidth = 44;          // ancho máximo permitido
-$lineHeight = 5;         // alto por línea
-$fontSize = 13;          // tamaño inicial
-$minFont  = 6;           // tamaño mínimo para no romper diseño
+            $fontSize = 13;
+            $minFont  = 7;
+            $maxWidth = 44;
 
-// Posición debajo del QR (ajustada hacia abajo)
-$startX = $x + 3;
-$startY = $y + 25 + $qrSize + 35; 
+            // Ajustar nombre a 2 líneas como máximo
+            do {
+                $pdf->SetFont('Arial', '', $fontSize);
+                list($l1, $l2) = $this->fitNameTwoLines($pdf, $name, $maxWidth);
 
-do {
-    // Setear fuente actual
-    $pdf->SetFont('Arial', '', $fontSize);
+                $ok1 = ($pdf->GetStringWidth($l1) <= $maxWidth);
+                $ok2 = ($l2 === "" || $pdf->GetStringWidth($l2) <= $maxWidth);
 
-    // Hacemos una simulación para saber cuántas líneas genera MultiCell
-    $pdf->SetXY($startX, $startY);
+                if ($ok1 && $ok2) break;
 
-    // Bordes de margen
-    $pdf->SetLeftMargin($startX);
-    $pdf->SetRightMargin(0);
+                $fontSize -= 0.5;
 
-    // Iniciar buffer para capturar salida de MultiCell
-    ob_start();
+            } while ($fontSize >= $minFont);
 
-    // MultiCell de prueba
-    $pdf->MultiCell($maxWidth, $lineHeight, $name, 0, 'C');
+            // NUEVO: bajar el nombre 2 cm extra
+            $baseY = $y + 25 + $qrSize + 30; // QR inicia en y+25, QR mide 25, +20mm
 
-    // Capturar resultado
-    $simulated = ob_get_clean();
+            $pdf->SetFont('Arial', '', $fontSize);
+            $pdf->SetTextColor(0,0,0);
 
-    // Contar cuántas líneas realmente se generaron
-    $lineCount = substr_count($simulated, "\n") + 1;
+            // Línea 1
+            $pdf->SetXY($x, $baseY);
+            $pdf->Cell($ticketWidth, 5, $l1, 0, 1, 'C');
 
-    if ($lineCount <= 3) {
-        break; // El nombre cabe en máximo 3 líneas
-    }
+            // Línea 2
+            if ($l2 !== "") {
+                $pdf->SetXY($x, $baseY + 5);
+                $pdf->Cell($ticketWidth, 5, $l2, 0, 1, 'C');
+            }
 
-    // Si no cabe → reducir fuente
-    $fontSize -= 0.5;
+            // Limpiar QR temporal
+            if (file_exists($qrFile)) @unlink($qrFile);
 
-} while ($fontSize >= $minFont);
-
-// --------------------------------------
-// Ya con un tamaño válido, dibujar texto real
-// --------------------------------------
-$pdf->SetXY($startX, $startY);
-$pdf->SetFont('Arial', '', $fontSize);
-$pdf->MultiCell($maxWidth, $lineHeight, $name, 0, 'C');
-
+            $i++;
         }
 
         // ----------------------------------------------------------------
