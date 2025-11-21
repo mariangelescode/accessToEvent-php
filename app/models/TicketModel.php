@@ -164,7 +164,7 @@ class TicketModel {
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
             // Nombre ajustado con 1 cm debajo del QR
-            $spaceBelowQR = 12; // 1 cm
+            $spaceBelowQR = 15; // 1 cm
             $startY = $qrY + $qrSize + $spaceBelowQR;
 
             $maxTextHeight = $ticketHeight - ($startY - $y) - 5; // margen inferior
