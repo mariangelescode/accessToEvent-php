@@ -46,6 +46,9 @@ class TicketModel {
     // --------------------------------------------------------------------
     // FUNCIÓN fitText: Ajusta texto a ancho y máximo 2 líneas
     // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // FUNCIÓN fitText: Ajusta texto a ancho y máximo 3 líneas
+    // --------------------------------------------------------------------
     private function fitText($pdf, $text, $maxWidth, $maxFont = 12, $minFont = 5) {
         $text = iconv('UTF-8','ISO-8859-1//TRANSLIT',$text);
         $words = explode(" ", $text);
@@ -70,8 +73,8 @@ class TicketModel {
                 $lines[] = trim($current);
             }
 
-            // Máximo 2 líneas
-            if (count($lines) <= 2) {
+            // Permitir hasta 3 líneas
+            if (count($lines) <= 3) {
 
                 // Recorte seguro por si una palabra es demasiado larga
                 foreach ($lines as &$ln) {
@@ -94,6 +97,7 @@ class TicketModel {
             "font"  => $minFont
         ];
     }
+
 
 
     public function createTicketsFromCSV($csvFile) {
