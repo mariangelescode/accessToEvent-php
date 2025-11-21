@@ -6,6 +6,8 @@
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../vendor/setasign/fpdf/fpdf.php';
 
+date_default_timezone_set('America/Mexico_City'); // <-- esta línea
+
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
 
