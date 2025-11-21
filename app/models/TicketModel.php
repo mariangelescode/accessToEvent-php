@@ -42,29 +42,41 @@ class TicketModel {
         if (!is_dir($this->storagePdf)) mkdir($this->storagePdf, 0777, true);
     }
 
-    // -------------------------------------------------------------
-    // Ajustar nombre a 1 o 2 líneas sin desbordar
-    // -------------------------------------------------------------
-    private function fitNameTwoLines($pdf, $text, $maxWidth)
-    {
+    // --------------------------------------------------------------------
+    // fitText: FORMA B (siempre 3 líneas pase lo que pase)
+    // --------------------------------------------------------------------
+    private function fitText($pdf, $text, $maxFont = 11) {
+
+        // Convertir caracteres
         $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
-        if ($text === "") return ["",""];
 
-        $words = explode(" ", $text);
-        $line1 = "";
-        $line2 = "";
-
-        foreach ($words as $w) {
-            $try = trim($line1 . " " . $w);
-
-            if ($pdf->GetStringWidth($try) <= $maxWidth) {
-                $line1 = $try;
-            } else {
-                $line2 .= $w . " ";
-            }
+        if ($text === "") {
+            return [
+                "lines" => ["—", "—", "—"],
+                "font"  => $maxFont
+            ];
         }
 
-        return [trim($line1), trim($line2)];
+        $words = explode(" ", $text);
+        $lines = [];
+
+        // EXACTAMENTE 3 LÍNEAS
+        if (count($words) >= 3) {
+            $lines = [
+                $words[0],
+                $words[1],
+                implode(" ", array_slice($words, 2))
+            ];
+        } elseif (count($words) == 2) {
+            $lines = [$words[0], $words[1], "—"];
+        } elseif (count($words) == 1) {
+            $lines = [$words[0], "—", "—"];
+        }
+
+        return [
+            "lines" => $lines,
+            "font"  => $maxFont
+        ];
     }
 
     // --------------------------------------------------------------------
@@ -162,47 +174,26 @@ class TicketModel {
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
 
             // QR centrado
-            $qrSize = 25;
+            $qrSize = 28;
             $qrX = $x + ($ticketWidth / 2) - ($qrSize / 2);
-            $qrY = $y + 25;
+            $qrY = $y + 28;
 
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
-            // ------------------------------------------------------------
-            // NOMBRE (2 líneas máximo, centrado, 2 cm más abajo del QR)
-            // ------------------------------------------------------------
-            $fontSize = 13;
-            $minFont  = 7;
-            $maxWidth = 44;
+            // ----------------------------------------------------------------
+            // NOMBRE EN 3 LÍNEAS
+            // ----------------------------------------------------------------
+            $resultText = $this->fitText($pdf, $name);
 
-            // Ajustar nombre a 2 líneas como máximo
-            do {
-                $pdf->SetFont('Arial', '', $fontSize);
-                list($l1, $l2) = $this->fitNameTwoLines($pdf, $name, $maxWidth);
+            $pdf->SetFont('Arial', '', $resultText['font']);
+            $pdf->SetTextColor(0, 0, 0);
 
-                $ok1 = ($pdf->GetStringWidth($l1) <= $maxWidth);
-                $ok2 = ($l2 === "" || $pdf->GetStringWidth($l2) <= $maxWidth);
+            // Punto inicial del texto
+            $startY = $y + 58;
 
-                if ($ok1 && $ok2) break;
-
-                $fontSize -= 0.5;
-
-            } while ($fontSize >= $minFont);
-
-            // NUEVO: bajar el nombre 2 cm extra
-            $baseY = $y + 25 + $qrSize + 30; // QR inicia en y+25, QR mide 25, +20mm
-
-            $pdf->SetFont('Arial', '', $fontSize);
-            $pdf->SetTextColor(0,0,0);
-
-            // Línea 1
-            $pdf->SetXY($x, $baseY);
-            $pdf->Cell($ticketWidth, 5, $l1, 0, 1, 'C');
-
-            // Línea 2
-            if ($l2 !== "") {
-                $pdf->SetXY($x, $baseY + 5);
-                $pdf->Cell($ticketWidth, 5, $l2, 0, 1, 'C');
+            foreach ($resultText['lines'] as $index => $line) {
+                $pdf->SetXY($x, $startY + ($index * 5));
+                $pdf->Cell($ticketWidth, 5, $line, 0, 1, 'C');
             }
 
             // Limpiar QR temporal
