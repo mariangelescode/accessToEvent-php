@@ -43,10 +43,9 @@ class TicketModel {
     }
 
     // --------------------------------------------------------------------
-    // fitText: FORMA B (siempre 3 líneas pase lo que pase)
+    // fitText: divide texto en 2 o 3 líneas según ancho disponible
     // --------------------------------------------------------------------
-    private function fitText($pdf, $text, $maxFont = 11) {
-
+    private function fitText($pdf, $text, $maxFont = 11, $ticketWidth = 50) {
         // Convertir caracteres
         $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
 
@@ -57,20 +56,28 @@ class TicketModel {
             ];
         }
 
+        $pdf->SetFont('Arial', '', $maxFont);
         $words = explode(" ", $text);
         $lines = [];
+        $currentLine = '';
 
-        // EXACTAMENTE 3 LÍNEAS
-        if (count($words) >= 3) {
-            $lines = [
-                $words[0],
-                $words[1],
-                implode(" ", array_slice($words, 2))
-            ];
-        } elseif (count($words) == 2) {
-            $lines = [$words[0], $words[1], "—"];
-        } elseif (count($words) == 1) {
-            $lines = [$words[0], "—", "—"];
+        foreach ($words as $word) {
+            $testLine = $currentLine === '' ? $word : $currentLine . ' ' . $word;
+            if ($pdf->GetStringWidth($testLine) < ($ticketWidth - 4)) {
+                $currentLine = $testLine;
+            } else {
+                $lines[] = $currentLine;
+                $currentLine = $word;
+            }
+        }
+        if ($currentLine !== '') $lines[] = $currentLine;
+
+        // Asegurar 3 líneas exactas (rellenar con guiones si faltan)
+        while (count($lines) < 3) $lines[] = "—";
+
+        // Si son más de 3 líneas, combinar la última
+        if (count($lines) > 3) {
+            $lines = [$lines[0], $lines[1], implode(' ', array_slice($lines, 2))];
         }
 
         return [
@@ -181,9 +188,9 @@ class TicketModel {
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
             // ----------------------------------------------------------------
-            // NOMBRE EN 3 LÍNEAS
+            // NOMBRE EN 2-3 LÍNEAS AJUSTABLES
             // ----------------------------------------------------------------
-            $resultText = $this->fitText($pdf, $name);
+            $resultText = $this->fitText($pdf, $name, 11, $ticketWidth);
 
             $pdf->SetFont('Arial', '', $resultText['font']);
             $pdf->SetTextColor(0, 0, 0);
