@@ -197,9 +197,9 @@ private function fitText($pdf, $text, $maxFont = 11)
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
 
             // QR centrado
-            $qrSize = 28;
+            $qrSize = 25;
             $qrX = $x + ($ticketWidth / 2) - ($qrSize / 2);
-            $qrY = $y + 28;
+            $qrY = $y + 25;
 
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
@@ -212,7 +212,7 @@ private function fitText($pdf, $text, $maxFont = 11)
             $pdf->SetTextColor(0, 0, 0);
 
             // Punto inicial del texto
-            $startY = $y + 63;
+            $startY = $y + 60;
 
             foreach ($resultText['lines'] as $index => $line) {
                 $pdf->SetXY($x, $startY + ($index * 5));
