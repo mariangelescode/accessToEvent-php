@@ -45,59 +45,60 @@ class TicketModel {
     // --------------------------------------------------------------------
     // fitText: FORMA B (siempre 3 líneas pase lo que pase)
     // --------------------------------------------------------------------
-    private function fitText($pdf, $text, $maxFont = 11)
-    {
-        $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT', $text));
+    // --------------------------------------------------------------------
+// fitText: Forma B (optimizada) — siempre 3 líneas sin desbordar
+// --------------------------------------------------------------------
+private function fitText($pdf, $text, $maxFont = 11)
+{
+    $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT', $text));
 
-        if ($text === "") {
-            return ["lines" => ["—","—","—"], "font" => $maxFont];
-        }
-
-        // ⚠️ Ajuste real según TU PLANTILLA
-        // Área útil encima de las esferas
-        $maxWidth = 36;   // ← ESTE ES EL ANCHO REAL QUE FUNCIONA
-
-        $pdf->SetFont('Arial','',$maxFont);
-
-        $words = explode(" ", $text);
-
-        $lines = [""];
-        $lineIndex = 0;
-
-        foreach ($words as $word) {
-
-            // si la palabra sola ya es más ancha que el maxWidth => cortarla
-            if ($pdf->GetStringWidth($word) > $maxWidth) {
-                $cut = "";
-                for ($i=0; $i < strlen($word); $i++) {
-                    $test = $cut . $word[$i];
-                    if ($pdf->GetStringWidth($test) > $maxWidth) {
-                        break;
-                    }
-                    $cut .= $word[$i];
-                }
-                $word = $cut;
-            }
-
-            $testLine = ($lines[$lineIndex] === "")
-                ? $word
-                : $lines[$lineIndex]." ".$word;
-
-            if ($pdf->GetStringWidth($testLine) <= $maxWidth) {
-                $lines[$lineIndex] = $testLine;
-            } else {
-                $lineIndex++;
-                if ($lineIndex >= 3) break;
-                $lines[$lineIndex] = $word;
-            }
-        }
-
-        while (count($lines) < 3) {
-            $lines[] = "—";
-        }
-
-        return ["lines"=>$lines, "font"=>$maxFont];
+    if ($text === "") {
+        return ["lines" => ["—","—","—"], "font" => $maxFont];
     }
+
+    // ANCHO REAL DEL TICKET
+    $maxWidth = 36; // no lo cambies, es el óptimo comprobado
+
+    $pdf->SetFont('Arial','',$maxFont);
+
+    $words = explode(" ", $text);
+
+    $lines = ["", "", ""];
+    $lineIndex = 0;
+
+    foreach ($words as $word) {
+
+        // Si la palabra sola ya es más ancha → reducirla sin partir mal
+        while ($pdf->GetStringWidth($word) > $maxWidth) {
+            $word = substr($word, 0, -1);
+        }
+
+        // Intento añadir palabra a la línea actual
+        $test = trim($lines[$lineIndex] . " " . $word);
+
+        if ($pdf->GetStringWidth($test) <= $maxWidth) {
+            $lines[$lineIndex] = $test;
+        } else {
+            // saltar a la siguiente línea
+            $lineIndex++;
+            if ($lineIndex >= 3) break; 
+            $lines[$lineIndex] = $word;
+        }
+    }
+
+    // Si faltaron líneas, rellenar con guiones
+    for ($i=0; $i<3; $i++) {
+        if (trim($lines[$i]) === "") {
+            $lines[$i] = "—";
+        }
+    }
+
+    return [
+        "lines" => $lines,
+        "font" => $maxFont
+    ];
+}
+
 
 
 
