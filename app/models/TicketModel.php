@@ -46,43 +46,41 @@ class TicketModel {
     // Ajustar nombre a 1 o 2 líneas sin desbordar
     // -------------------------------------------------------------
     private function fitNameTwoLines($pdf, $text, $maxWidth)
-{
-    $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
-    if ($text === "") return ["",""];
+    {
+        $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
+        if ($text === "") return ["",""];
 
-    $words = explode(" ", $text);
-    $line1 = "";
-    $line2 = "";
+        $words = explode(" ", $text);
+        $line1 = "";
+        $line2 = "";
 
-    // Construir línea 1
-    foreach ($words as $i => $w) {
-        $try = trim($line1 . " " . $w);
-
-        if ($pdf->GetStringWidth($try) <= $maxWidth) {
-            $line1 = $try;
-        } else {
-            // Empieza a construir línea 2
-            $remainingWords = array_slice($words, $i);
-            break;
-        }
-    }
-
-    // Construir línea 2 con lo que sobra
-    if (!empty($remainingWords)) {
-        foreach ($remainingWords as $w) {
-            $try = trim($line2 . " " . $w);
+        // Construir línea 1
+        foreach ($words as $i => $w) {
+            $try = trim($line1 . " " . $w);
 
             if ($pdf->GetStringWidth($try) <= $maxWidth) {
-                $line2 = $try;
+                $line1 = $try;
             } else {
-                // Ya no cabe más → ignorar o cortar
+                $remainingWords = array_slice($words, $i);
                 break;
             }
         }
-    }
 
-    return [trim($line1), trim($line2)];
-}
+        // Construir línea 2 con lo que sobra
+        if (!empty($remainingWords)) {
+            foreach ($remainingWords as $w) {
+                $try = trim($line2 . " " . $w);
+
+                if ($pdf->GetStringWidth($try) <= $maxWidth) {
+                    $line2 = $try;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return [trim($line1), trim($line2)];
+    }
 
 
     // --------------------------------------------------------------------
@@ -187,13 +185,12 @@ class TicketModel {
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
             // ------------------------------------------------------------
-            // NOMBRE (2 líneas máximo, centrado, 2 cm más abajo del QR)
+            // NOMBRE (2 líneas máx, centrado, sin desbordes)
             // ------------------------------------------------------------
             $fontSize = 13;
             $minFont  = 7;
             $maxWidth = 44;
 
-            // Ajustar nombre a 2 líneas como máximo
             do {
                 $pdf->SetFont('Arial', '', $fontSize);
                 list($l1, $l2) = $this->fitNameTwoLines($pdf, $name, $maxWidth);
@@ -207,21 +204,23 @@ class TicketModel {
 
             } while ($fontSize >= $minFont);
 
-            // NUEVO: bajar el nombre 2 cm extra
-            $baseY = $y + 25 + $qrSize + 35; // QR inicia en y+25, QR mide 25, +20mm
+            // Posición (más abajo del QR)
+            $baseY = $y + 25 + $qrSize + 35;
 
             $pdf->SetFont('Arial', '', $fontSize);
             $pdf->SetTextColor(0,0,0);
 
-            // Línea 1
-            $pdf->SetXY($x, $baseY);
-            $pdf->Cell($ticketWidth, 5, $l1, 0, 1, 'C');
+            // LIMPIEZA Y PREPARACIÓN
+            $pdf->SetXY($x + 3, $baseY);
 
-            // Línea 2
-            if ($l2 !== "") {
-                $pdf->SetXY($x, $baseY + 5);
-                $pdf->Cell($ticketWidth, 5, $l2, 0, 1, 'C');
-            }
+            // ⚡⚡ MULTICELL = SIN DESBORDES
+            $pdf->MultiCell(
+                44,                          // ancho
+                5,                           // alto de línea
+                $l1 . ($l2 ? "\n$l2" : ""),  // contenido
+                0,                           // sin borde
+                'C'                          // centrado
+            );
 
             // Limpiar QR temporal
             if (file_exists($qrFile)) @unlink($qrFile);
