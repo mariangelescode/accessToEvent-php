@@ -190,7 +190,7 @@ class TicketModel {
             } while ($fontSize >= $minFont);
 
             // NUEVO: bajar el nombre 2 cm extra
-            $baseY = $y + 25 + $qrSize + 20; // QR inicia en y+25, QR mide 25, +20mm
+            $baseY = $y + 25 + $qrSize + 35; // QR inicia en y+25, QR mide 25, +20mm
 
             $pdf->SetFont('Arial', '', $fontSize);
             $pdf->SetTextColor(0,0,0);
