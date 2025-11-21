@@ -189,7 +189,7 @@ class TicketModel {
             $pdf->SetTextColor(0, 0, 0);
 
             // Punto inicial del texto
-            $startY = $y + 58;
+            $startY = $y + 62;
 
             foreach ($resultText['lines'] as $index => $line) {
                 $pdf->SetXY($x, $startY + ($index * 5));
