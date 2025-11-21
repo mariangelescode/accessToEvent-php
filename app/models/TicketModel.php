@@ -174,9 +174,9 @@ class TicketModel {
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
 
             // QR centrado
-            $qrSize = 28;
+            $qrSize = 25;
             $qrX = $x + ($ticketWidth / 2) - ($qrSize / 2);
-            $qrY = $y + 26;
+            $qrY = $y + 28;
 
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
