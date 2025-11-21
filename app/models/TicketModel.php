@@ -72,6 +72,14 @@ class TicketModel {
 
             // Máximo 2 líneas
             if (count($lines) <= 2) {
+
+                // Recorte seguro por si una palabra es demasiado larga
+                foreach ($lines as &$ln) {
+                    if (strlen($ln) > 22) {
+                        $ln = substr($ln, 0, 22) . '…';
+                    }
+                }
+
                 return [
                     "lines" => $lines,
                     "font"  => $font
@@ -82,7 +90,7 @@ class TicketModel {
         // Último recurso: recortar
         $pdf->SetFont('Arial', '', $minFont);
         return [
-            "lines" => [substr($text, 0, 30)],
+            "lines" => [substr($text, 0, 22) . '…'],
             "font"  => $minFont
         ];
     }
@@ -121,7 +129,7 @@ class TicketModel {
         $pdf->AddPage();
 
         // ----------------------------------------------------------------
-        //  LAYOUT 12 BOLETOS/PÁGINA
+        //  LAYOUT 12 BOLETOS POR PÁGINA
         // ----------------------------------------------------------------
         $ticketWidth  = 50;
         $ticketHeight = 85;
@@ -137,7 +145,7 @@ class TicketModel {
             $name   = trim($r[1] ?? '');
             $center = trim($r[2] ?? '');
 
-            // Guardar en DB
+            // Guardar en la BD
             if ($user !== '' || $name !== '') {
                 $stmt = $this->mysqli->prepare("INSERT INTO tickets(sap, name, center) VALUES(?,?,?)");
                 if ($stmt) {
@@ -174,7 +182,7 @@ class TicketModel {
             $x = $colX[$col];
             $y = $rowY[$row];
 
-            // Plantilla
+            // Plantilla del boleto
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
 
@@ -186,7 +194,7 @@ class TicketModel {
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
             // ----------------------------------------------------------------
-            //  AJUSTE INTELIGENTE DEL NOMBRE
+            //  AJUSTE INTELIGENTE DEL NOMBRE (ya corregido)
             // ----------------------------------------------------------------
             $maxTextWidth = $ticketWidth - 10;
 
@@ -195,10 +203,11 @@ class TicketModel {
             $pdf->SetFont('Arial', '', $resultText['font']);
             $pdf->SetTextColor(0, 0, 0);
 
-            $startY = $y + $ticketHeight - 20;
+            // ❗ NUEVA POSICIÓN que evita desbordes
+            $startY = $y + 55;
 
             foreach ($resultText['lines'] as $idx => $line) {
-                $pdf->SetXY($x, $startY + ($idx * 4));
+                $pdf->SetXY($x, $startY + ($idx * 3.5));
                 $pdf->Cell($ticketWidth, 4, $line, 0, 1, 'C');
             }
 
@@ -209,7 +218,7 @@ class TicketModel {
         }
 
         // ----------------------------------------------------------------
-        //  GUARDAR PDF FINAL
+        //  GUARDAR PDF
         // ----------------------------------------------------------------
         $pdfFile = $this->storagePdf . '/boletos.pdf';
         $pdf->Output('F', $pdfFile);
