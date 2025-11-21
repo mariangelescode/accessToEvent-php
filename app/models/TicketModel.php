@@ -46,26 +46,44 @@ class TicketModel {
     // Ajustar nombre a 1 o 2 líneas sin desbordar
     // -------------------------------------------------------------
     private function fitNameTwoLines($pdf, $text, $maxWidth)
-    {
-        $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
-        if ($text === "") return ["",""];
+{
+    $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
+    if ($text === "") return ["",""];
 
-        $words = explode(" ", $text);
-        $line1 = "";
-        $line2 = "";
+    $words = explode(" ", $text);
+    $line1 = "";
+    $line2 = "";
 
-        foreach ($words as $w) {
-            $try = trim($line1 . " " . $w);
+    // Construir línea 1
+    foreach ($words as $i => $w) {
+        $try = trim($line1 . " " . $w);
+
+        if ($pdf->GetStringWidth($try) <= $maxWidth) {
+            $line1 = $try;
+        } else {
+            // Empieza a construir línea 2
+            $remainingWords = array_slice($words, $i);
+            break;
+        }
+    }
+
+    // Construir línea 2 con lo que sobra
+    if (!empty($remainingWords)) {
+        foreach ($remainingWords as $w) {
+            $try = trim($line2 . " " . $w);
 
             if ($pdf->GetStringWidth($try) <= $maxWidth) {
-                $line1 = $try;
+                $line2 = $try;
             } else {
-                $line2 .= $w . " ";
+                // Ya no cabe más → ignorar o cortar
+                break;
             }
         }
-
-        return [trim($line1), trim($line2)];
     }
+
+    return [trim($line1), trim($line2)];
+}
+
 
     // --------------------------------------------------------------------
     // GENERAR BOLETOS DESDE CSV
