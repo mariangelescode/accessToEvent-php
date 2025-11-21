@@ -35,9 +35,6 @@ class TicketModel {
         if (!is_dir($this->storagePdf)) mkdir($this->storagePdf, 0777, true);
     }
 
-    // --------------------------------------------------------------------
-    // Ajustar texto a 3 líneas máximo usando MultiCell
-    // --------------------------------------------------------------------
     private function fitText($pdf, $text, $maxFont = 11, $ticketTextWidth = 46) {
         $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
         if ($text === "") return ["lines" => ["—","—","—"], "font" => $maxFont];
@@ -49,12 +46,10 @@ class TicketModel {
         while ($fontSize >= 6) {
             $pdf->SetFont('Arial', '', $fontSize);
             $lines = $this->wordWrapLines($pdf, $text, $ticketTextWidth);
-
             if (count($lines) <= $maxLines) break;
             $fontSize--;
         }
 
-        // Ajustar exactamente a 3 líneas
         while (count($lines) < $maxLines) $lines[] = "—";
         if (count($lines) > $maxLines) {
             $lines = array_slice($lines, 0, $maxLines-1);
@@ -64,9 +59,6 @@ class TicketModel {
         return ["lines" => $lines, "font" => $fontSize];
     }
 
-    // --------------------------------------------------------------------
-    // Word wrap que devuelve líneas como array
-    // --------------------------------------------------------------------
     private function wordWrapLines($pdf, $text, $maxWidth) {
         $words = explode(' ', $text);
         $lines = [];
@@ -77,7 +69,6 @@ class TicketModel {
                 $currentLine = $testLine;
             } else {
                 if ($currentLine === '') {
-                    // palabra demasiado larga, partir en partes
                     $split = str_split($word, 5);
                     $lines[] = $split[0];
                     $currentLine = $split[1] ?? '';
@@ -91,9 +82,6 @@ class TicketModel {
         return $lines;
     }
 
-    // --------------------------------------------------------------------
-    // GENERAR BOLETOS DESDE CSV
-    // --------------------------------------------------------------------
     public function createTicketsFromCSV($csvFile) {
         if (!file_exists($csvFile)) throw new Exception("CSV no encontrado: $csvFile");
 
@@ -160,18 +148,24 @@ class TicketModel {
             $qrY = $y + 26;
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
-            // Nombre ajustado
+            // Nombre ajustado con 1 cm de margin top desde el QR
             $resultText = $this->fitText($pdf, $name, 11, $ticketWidth - 4);
             $pdf->SetFont('Arial', '', $resultText['font']);
             $pdf->SetTextColor(0,0,0);
 
-            // --- NUEVO: dejar 20 mm (2 cm) de espacio entre QR y nombre ---
-            $spaceAboveName = 20;
-            $startY = $qrY + $qrSize + $spaceAboveName;
+            $spaceBelowQR = 10; // 1 cm de separación
+            $startY = $qrY + $qrSize + $spaceBelowQR;
+
+            $lineHeight = 5;
+            $totalTextHeight = count($resultText['lines']) * $lineHeight;
+            $maxHeight = $ticketHeight - ($startY - $y) - 5; // margen inferior
+            if ($totalTextHeight > $maxHeight) {
+                $pdf->SetFont('Arial', '', max(6, $resultText['font'] - 1));
+            }
 
             foreach ($resultText['lines'] as $index => $line) {
-                $pdf->SetXY($x + 2, $startY + ($index*5));
-                $pdf->Cell($ticketWidth - 4, 5, $line, 0, 1, 'C');
+                $pdf->SetXY($x + 2, $startY + ($index * $lineHeight));
+                $pdf->Cell($ticketWidth - 4, $lineHeight, $line, 0, 1, 'C');
             }
 
             if (file_exists($qrFile)) @unlink($qrFile);
