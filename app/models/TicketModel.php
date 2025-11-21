@@ -35,12 +35,13 @@ class TicketModel {
         // -----------------------------------------
         // RUTAS STORAGE
         // -----------------------------------------
-        $this->storageQr = __DIR__ . '/../../storage/qr';
+        $this->storageQr  = __DIR__ . '/../../storage/qr';
         $this->storagePdf = __DIR__ . '/../../storage/pdf';
 
         if (!is_dir($this->storageQr)) mkdir($this->storageQr, 0777, true);
         if (!is_dir($this->storagePdf)) mkdir($this->storagePdf, 0777, true);
     }
+
 
     // --------------------------------------------------------------------
     // FUNCIÓN fitText: Ajusta texto a ancho y máximo 2 líneas
@@ -50,7 +51,6 @@ class TicketModel {
         $words = explode(" ", $text);
 
         for ($font = $maxFont; $font >= $minFont; $font--) {
-
             $pdf->SetFont('Arial', '', $font);
             $lines = [];
             $current = "";
@@ -70,7 +70,7 @@ class TicketModel {
                 $lines[] = trim($current);
             }
 
-            // Máximo 2 líneas permitidas
+            // Máximo 2 líneas
             if (count($lines) <= 2) {
                 return [
                     "lines" => $lines,
@@ -79,11 +79,11 @@ class TicketModel {
             }
         }
 
-        // Si todo falla, fuerza recorte:
-        $pdf->SetFont('Arial','',$minFont);
+        // Último recurso: recortar
+        $pdf->SetFont('Arial', '', $minFont);
         return [
             "lines" => [substr($text, 0, 30)],
-            "font" => $minFont
+            "font"  => $minFont
         ];
     }
 
@@ -113,7 +113,7 @@ class TicketModel {
         }
 
         // ----------------------------------------------------------------
-        //  CONFIGURAR PDF – TAMAÑO CARTA (Letter)
+        //  CONFIGURAR PDF (LETTER)
         // ----------------------------------------------------------------
         $pdf = new \FPDF('P', 'mm', 'LETTER');
         $pdf->SetMargins(0, 0, 0);
@@ -121,7 +121,7 @@ class TicketModel {
         $pdf->AddPage();
 
         // ----------------------------------------------------------------
-        //  LAYOUT SIN ESPACIOS – 12 BOLETOS/PÁGINA
+        //  LAYOUT 12 BOLETOS/PÁGINA
         // ----------------------------------------------------------------
         $ticketWidth  = 50;
         $ticketHeight = 85;
@@ -163,9 +163,7 @@ class TicketModel {
             $qrFile = $this->storageQr . "/qr_$i.png";
             $result->saveToFile($qrFile);
 
-            // ----------------------------------------------------------------
-            //  CÁLCULO DE POSICIÓN
-            // ----------------------------------------------------------------
+            // Posiciones
             $col = $i % 4;
             $row = intdiv($i % 12, 4);
 
@@ -176,15 +174,11 @@ class TicketModel {
             $x = $colX[$col];
             $y = $rowY[$row];
 
-            // ----------------------------------------------------------------
-            //  PLANTILLA
-            // ----------------------------------------------------------------
+            // Plantilla
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
 
-            // ----------------------------------------------------------------
-            //  POSICIÓN QR
-            // ----------------------------------------------------------------
+            // QR centrado
             $qrSize = 28;
             $qrX = $x + ($ticketWidth / 2) - ($qrSize / 2);
             $qrY = $y + 28;
@@ -192,9 +186,10 @@ class TicketModel {
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
             // ----------------------------------------------------------------
-            //  TEXTO DEL NOMBRE – MÁXIMO 2 LÍNEAS
+            //  AJUSTE INTELIGENTE DEL NOMBRE
             // ----------------------------------------------------------------
-            // Texto del nombre con ajuste inteligente
+            $maxTextWidth = $ticketWidth - 10;
+
             $resultText = $this->fitText($pdf, $name ?: '-', $maxTextWidth);
 
             $pdf->SetFont('Arial', '', $resultText['font']);
@@ -214,10 +209,8 @@ class TicketModel {
         }
 
         // ----------------------------------------------------------------
-        //  GUARDAR PDF
+        //  GUARDAR PDF FINAL
         // ----------------------------------------------------------------
-        if (!is_dir($this->storagePdf)) mkdir($this->storagePdf, 0777, true);
-
         $pdfFile = $this->storagePdf . '/boletos.pdf';
         $pdf->Output('F', $pdfFile);
 
