@@ -164,7 +164,7 @@ class TicketModel {
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
             // Nombre ajustado con 1 cm debajo del QR
-            $spaceBelowQR = 2; // 1 cm
+            $spaceBelowQR = 10; // 10 mm = 1 cm
             $startY = $qrY + $qrSize + $spaceBelowQR;
 
             $maxTextHeight = $ticketHeight - ($startY - $y) - 5; // margen inferior
@@ -183,7 +183,8 @@ class TicketModel {
             $i++;
         }
 
-        $pdfFile = $this->storagePdf . '/boletos.pdf';
+        // Nombre del PDF con hora, minuto y segundo
+        $pdfFile = $this->storagePdf . "/boletos_" . date('His') . ".pdf";
         $pdf->Output('F', $pdfFile);
         if (!file_exists($pdfFile)) throw new Exception("No se pudo crear el PDF");
         return $pdfFile;
