@@ -1,5 +1,8 @@
 <?php
 // TicketModel.php
+// Requiere: composer autoload + endroid/qr-code + setasign/fpdf
+// Ruta: /var/www/html/access/app/models/TicketModel.php
+
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../vendor/setasign/fpdf/fpdf.php';
 
@@ -32,7 +35,9 @@ class TicketModel {
         if (!is_dir($this->storagePdf)) mkdir($this->storagePdf, 0777, true);
     }
 
-    // Ajustar texto al espacio disponible con mínimo de 5pt y recortar con …
+    // --------------------------------------------------------------------
+    // Ajustar texto a 3 líneas máximo, nunca se desborda, con …
+    // --------------------------------------------------------------------
     private function fitTextStrict($pdf, $text, $ticketTextWidth, $maxHeight) {
         $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
         if ($text === "") return ["lines" => ["—","—","—"], "font" => 11];
@@ -45,24 +50,26 @@ class TicketModel {
         while ($fontSize >= 5) {
             $pdf->SetFont('Arial', '', $fontSize);
             $lines = $this->wordWrapLines($pdf, $text, $ticketTextWidth);
-
             if (count($lines) <= $maxLines) break;
             $fontSize--;
         }
 
-        // Si sigue excediendo, recortar la última línea y añadir …
+        // Recortar líneas si sobrepasa maxLines
         if (count($lines) > $maxLines) {
             $lines = array_slice($lines, 0, $maxLines);
-            $lastLine = $lines[$maxLines-1];
+            $lastLine = $lines[$maxLines - 1];
             while ($pdf->GetStringWidth($lastLine.'…') > $ticketTextWidth && strlen($lastLine) > 0) {
                 $lastLine = mb_substr($lastLine, 0, -1);
             }
-            $lines[$maxLines-1] = $lastLine.'…';
+            $lines[$maxLines - 1] = $lastLine.'…';
         }
 
         return ["lines" => $lines, "font" => $fontSize];
     }
 
+    // --------------------------------------------------------------------
+    // Word wrap que devuelve líneas como array
+    // --------------------------------------------------------------------
     private function wordWrapLines($pdf, $text, $maxWidth) {
         $words = explode(' ', $text);
         $lines = [];
@@ -73,6 +80,7 @@ class TicketModel {
                 $currentLine = $testLine;
             } else {
                 if ($currentLine === '') {
+                    // palabra demasiado larga, partir en partes
                     $split = str_split($word, 5);
                     $lines[] = $split[0];
                     $currentLine = $split[1] ?? '';
@@ -86,6 +94,9 @@ class TicketModel {
         return $lines;
     }
 
+    // --------------------------------------------------------------------
+    // GENERAR BOLETOS DESDE CSV
+    // --------------------------------------------------------------------
     public function createTicketsFromCSV($csvFile) {
         if (!file_exists($csvFile)) throw new Exception("CSV no encontrado: $csvFile");
 
@@ -123,6 +134,7 @@ class TicketModel {
                 }
             }
 
+            // Generar QR
             $qrData = trim("$user|$name|$center");
             $builder = new Builder();
             $result = $builder
@@ -141,19 +153,21 @@ class TicketModel {
             $x = $colX[$col];
             $y = $rowY[$row];
 
+            // Fondo
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
 
+            // QR centrado
             $qrSize = 25;
             $qrX = $x + ($ticketWidth/2) - ($qrSize/2);
             $qrY = $y + 26;
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
-            // Nombre siempre dentro del ticket, 1 cm debajo del QR
+            // Nombre ajustado con 1 cm debajo del QR
             $spaceBelowQR = 10; // 1 cm
             $startY = $qrY + $qrSize + $spaceBelowQR;
-            $maxTextHeight = $ticketHeight - ($startY - $y) - 5;
 
+            $maxTextHeight = $ticketHeight - ($startY - $y) - 5; // margen inferior
             $resultText = $this->fitTextStrict($pdf, $name, $ticketWidth - 4, $maxTextHeight);
 
             $pdf->SetFont('Arial', '', $resultText['font']);
