@@ -187,45 +187,57 @@ class TicketModel {
             // ------------------------------------------------------------
             // NOMBRE (2 líneas máx, centrado, sin desbordes)
             // ------------------------------------------------------------
-            $fontSize = 13;
-            $minFont  = 7;
-            $maxWidth = 44;
+            // ------------------------------------------------------------
+// NOMBRE (máximo 3 líneas reales sin desbordar NUNCA)
+// ------------------------------------------------------------
+$maxWidth = 44;          // ancho máximo permitido
+$lineHeight = 5;         // alto por línea
+$fontSize = 13;          // tamaño inicial
+$minFont  = 6;           // tamaño mínimo para no romper diseño
 
-            do {
-                $pdf->SetFont('Arial', '', $fontSize);
-                list($l1, $l2) = $this->fitNameTwoLines($pdf, $name, $maxWidth);
+// Posición debajo del QR (ajustada hacia abajo)
+$startX = $x + 3;
+$startY = $y + 25 + $qrSize + 35; 
 
-                $ok1 = ($pdf->GetStringWidth($l1) <= $maxWidth);
-                $ok2 = ($l2 === "" || $pdf->GetStringWidth($l2) <= $maxWidth);
+do {
+    // Setear fuente actual
+    $pdf->SetFont('Arial', '', $fontSize);
 
-                if ($ok1 && $ok2) break;
+    // Hacemos una simulación para saber cuántas líneas genera MultiCell
+    $pdf->SetXY($startX, $startY);
 
-                $fontSize -= 0.5;
+    // Bordes de margen
+    $pdf->SetLeftMargin($startX);
+    $pdf->SetRightMargin(0);
 
-            } while ($fontSize >= $minFont);
+    // Iniciar buffer para capturar salida de MultiCell
+    ob_start();
 
-            // Posición (más abajo del QR)
-            $baseY = $y + 25 + $qrSize + 35;
+    // MultiCell de prueba
+    $pdf->MultiCell($maxWidth, $lineHeight, $name, 0, 'C');
 
-            $pdf->SetFont('Arial', '', $fontSize);
-            $pdf->SetTextColor(0,0,0);
+    // Capturar resultado
+    $simulated = ob_get_clean();
 
-            // LIMPIEZA Y PREPARACIÓN
-            $pdf->SetXY($x + 3, $baseY);
+    // Contar cuántas líneas realmente se generaron
+    $lineCount = substr_count($simulated, "\n") + 1;
 
-            // ⚡⚡ MULTICELL = SIN DESBORDES
-            $pdf->MultiCell(
-                44,                          // ancho
-                5,                           // alto de línea
-                $l1 . ($l2 ? "\n$l2" : ""),  // contenido
-                0,                           // sin borde
-                'C'                          // centrado
-            );
+    if ($lineCount <= 3) {
+        break; // El nombre cabe en máximo 3 líneas
+    }
 
-            // Limpiar QR temporal
-            if (file_exists($qrFile)) @unlink($qrFile);
+    // Si no cabe → reducir fuente
+    $fontSize -= 0.5;
 
-            $i++;
+} while ($fontSize >= $minFont);
+
+// --------------------------------------
+// Ya con un tamaño válido, dibujar texto real
+// --------------------------------------
+$pdf->SetXY($startX, $startY);
+$pdf->SetFont('Arial', '', $fontSize);
+$pdf->MultiCell($maxWidth, $lineHeight, $name, 0, 'C');
+
         }
 
         // ----------------------------------------------------------------
