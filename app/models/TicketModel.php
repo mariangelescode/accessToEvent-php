@@ -169,12 +169,13 @@ class TicketModel {
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
             // ------------------------------------------------------------
-            // NOMBRE (2 líneas máximo, centrado abajo del QR)
+            // NOMBRE (2 líneas máximo, centrado, 2 cm más abajo del QR)
             // ------------------------------------------------------------
             $fontSize = 13;
             $minFont  = 7;
             $maxWidth = 44;
 
+            // Ajustar nombre a 2 líneas como máximo
             do {
                 $pdf->SetFont('Arial', '', $fontSize);
                 list($l1, $l2) = $this->fitNameTwoLines($pdf, $name, $maxWidth);
@@ -188,7 +189,8 @@ class TicketModel {
 
             } while ($fontSize >= $minFont);
 
-            $baseY = $y + 62;
+            // NUEVO: bajar el nombre 2 cm extra
+            $baseY = $y + 25 + $qrSize + 20; // QR inicia en y+25, QR mide 25, +20mm
 
             $pdf->SetFont('Arial', '', $fontSize);
             $pdf->SetTextColor(0,0,0);
