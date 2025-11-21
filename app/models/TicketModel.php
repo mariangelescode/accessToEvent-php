@@ -47,18 +47,18 @@ class TicketModel {
     // --------------------------------------------------------------------
     private function fitText($pdf, $text, $maxFont = 11)
     {
-        $text = trim(iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $text));
+        $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT', $text));
 
         if ($text === "") {
-            return [
-                "lines" => ["—", "—", "—"],
-                "font"  => $maxFont
-            ];
+            return ["lines" => ["—","—","—"], "font" => $maxFont];
         }
 
-        $pdf->SetFont('Arial', '', $maxFont);
+        // ⚠️ Ajuste real según TU PLANTILLA
+        // Área útil encima de las esferas
+        $maxWidth = 36;   // ← ESTE ES EL ANCHO REAL QUE FUNCIONA
 
-        $maxWidth = 46; // ancho útil dentro del ticket (50mm menos márgenes)
+        $pdf->SetFont('Arial','',$maxFont);
+
         $words = explode(" ", $text);
 
         $lines = [""];
@@ -66,29 +66,39 @@ class TicketModel {
 
         foreach ($words as $word) {
 
+            // si la palabra sola ya es más ancha que el maxWidth => cortarla
+            if ($pdf->GetStringWidth($word) > $maxWidth) {
+                $cut = "";
+                for ($i=0; $i < strlen($word); $i++) {
+                    $test = $cut . $word[$i];
+                    if ($pdf->GetStringWidth($test) > $maxWidth) {
+                        break;
+                    }
+                    $cut .= $word[$i];
+                }
+                $word = $cut;
+            }
+
             $testLine = ($lines[$lineIndex] === "")
                 ? $word
-                : $lines[$lineIndex] . " " . $word;
+                : $lines[$lineIndex]." ".$word;
 
             if ($pdf->GetStringWidth($testLine) <= $maxWidth) {
                 $lines[$lineIndex] = $testLine;
             } else {
                 $lineIndex++;
-                if ($lineIndex >= 3) break; // Máximo 3 líneas
+                if ($lineIndex >= 3) break;
                 $lines[$lineIndex] = $word;
             }
         }
 
-        // Asegurar siempre 3 líneas
         while (count($lines) < 3) {
             $lines[] = "—";
         }
 
-        return [
-            "lines" => $lines,
-            "font"  => $maxFont
-        ];
+        return ["lines"=>$lines, "font"=>$maxFont];
     }
+
 
 
     // --------------------------------------------------------------------
@@ -201,7 +211,7 @@ class TicketModel {
             $pdf->SetTextColor(0, 0, 0);
 
             // Punto inicial del texto
-            $startY = $y + 62;
+            $startY = $y + 60;
 
             foreach ($resultText['lines'] as $index => $line) {
                 $pdf->SetXY($x, $startY + ($index * 5));
