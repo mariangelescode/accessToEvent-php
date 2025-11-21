@@ -15,15 +15,11 @@ class TicketModel {
     private $storagePdf;
 
     public function __construct($config) {
-
-        // -----------------------------------------
-        // CONEXIÓN MYSQL
-        // -----------------------------------------
         $this->mysqli = new mysqli(
-            $config['db_host'] ?? $config->db_host ?? '',
-            $config['db_user'] ?? $config->db_user ?? '',
-            $config['db_pass'] ?? $config->db_pass ?? '',
-            $config['db_name'] ?? $config->db_name ?? ''
+            $config['db_host'] ?? '',
+            $config['db_user'] ?? '',
+            $config['db_pass'] ?? '',
+            $config['db_name'] ?? ''
         );
 
         if ($this->mysqli->connect_errno) {
@@ -32,9 +28,6 @@ class TicketModel {
 
         $this->mysqli->set_charset("utf8mb4");
 
-        // -----------------------------------------
-        // RUTAS STORAGE
-        // -----------------------------------------
         $this->storageQr  = __DIR__ . '/../../storage/qr';
         $this->storagePdf = __DIR__ . '/../../storage/pdf';
 
@@ -43,103 +36,96 @@ class TicketModel {
     }
 
     // --------------------------------------------------------------------
-    // fitText: divide texto en 2 o 3 líneas según ancho disponible
+    // Ajustar texto a 3 líneas máximo usando el alto disponible
     // --------------------------------------------------------------------
-    private function fitText($pdf, $text, $maxFont = 11, $ticketWidth = 50) {
-        // Convertir caracteres
+    private function fitTextWithHeight($pdf, $text, $maxFont, $ticketTextWidth, $maxHeight) {
         $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
+        if ($text === "") return ["lines" => ["—","—","—"], "font" => $maxFont];
 
-        if ($text === "") {
-            return [
-                "lines" => ["—", "—", "—"],
-                "font"  => $maxFont
-            ];
+        $fontSize = $maxFont;
+        $maxLines = 3;
+        $lineHeight = 5; // altura de cada línea en mm
+
+        while ($fontSize >= 6) {
+            $pdf->SetFont('Arial', '', $fontSize);
+            $lines = $this->wordWrapLines($pdf, $text, $ticketTextWidth);
+
+            // Ajustar líneas si hay más de 3
+            if (count($lines) > $maxLines) {
+                $lines = array_slice($lines, 0, $maxLines-1);
+                $lines[] = implode(' ', array_slice($lines, $maxLines-1));
+            }
+
+            // Ver si cabe en el alto disponible
+            if (count($lines) * $lineHeight <= $maxHeight) break;
+
+            $fontSize--; // reducir fuente y reintentar
         }
 
-        $pdf->SetFont('Arial', '', $maxFont);
-        $words = explode(" ", $text);
+        // Ajustar exactamente a 3 líneas
+        while (count($lines) < $maxLines) $lines[] = "—";
+
+        return ["lines" => $lines, "font" => $fontSize];
+    }
+
+    // --------------------------------------------------------------------
+    // Word wrap que devuelve líneas como array
+    // --------------------------------------------------------------------
+    private function wordWrapLines($pdf, $text, $maxWidth) {
+        $words = explode(' ', $text);
         $lines = [];
         $currentLine = '';
-
         foreach ($words as $word) {
-            $testLine = $currentLine === '' ? $word : $currentLine . ' ' . $word;
-            if ($pdf->GetStringWidth($testLine) < ($ticketWidth - 4)) {
+            $testLine = $currentLine === '' ? $word : $currentLine.' '.$word;
+            if ($pdf->GetStringWidth($testLine) <= $maxWidth) {
                 $currentLine = $testLine;
             } else {
-                $lines[] = $currentLine;
-                $currentLine = $word;
+                if ($currentLine === '') {
+                    // palabra demasiado larga, partir en partes
+                    $split = str_split($word, 5);
+                    $lines[] = $split[0];
+                    $currentLine = $split[1] ?? '';
+                } else {
+                    $lines[] = $currentLine;
+                    $currentLine = $word;
+                }
             }
         }
         if ($currentLine !== '') $lines[] = $currentLine;
-
-        // Asegurar 3 líneas exactas (rellenar con guiones si faltan)
-        while (count($lines) < 3) $lines[] = "—";
-
-        // Si son más de 3 líneas, combinar la última
-        if (count($lines) > 3) {
-            $lines = [$lines[0], $lines[1], implode(' ', array_slice($lines, 2))];
-        }
-
-        return [
-            "lines" => $lines,
-            "font"  => $maxFont
-        ];
+        return $lines;
     }
 
     // --------------------------------------------------------------------
     // GENERAR BOLETOS DESDE CSV
     // --------------------------------------------------------------------
     public function createTicketsFromCSV($csvFile) {
+        if (!file_exists($csvFile)) throw new Exception("CSV no encontrado: $csvFile");
 
-        if (!file_exists($csvFile)) {
-            throw new Exception("CSV no encontrado: $csvFile");
-        }
-
-        // ----------------------------------------------------------------
-        //  LEER CSV
-        // ----------------------------------------------------------------
         $rows = [];
         if (($handle = fopen($csvFile, "r")) !== false) {
             while (($data = fgetcsv($handle, 10000, ",")) !== false) {
-
-                $allEmpty = true;
-                foreach ($data as $c) {
-                    if (trim((string)$c) !== '') { 
-                        $allEmpty = false; 
-                        break; 
-                    }
-                }
-                if ($allEmpty) continue;
-
+                if (count(array_filter($data, fn($c) => trim($c) !== '')) === 0) continue;
                 $rows[] = $data;
             }
             fclose($handle);
         }
 
-        // ----------------------------------------------------------------
-        //  CONFIGURAR PDF (LETTER)
-        // ----------------------------------------------------------------
         $pdf = new \FPDF('P', 'mm', 'LETTER');
-        $pdf->SetMargins(0, 0, 0);
+        $pdf->SetMargins(0,0,0);
         $pdf->SetAutoPageBreak(false);
         $pdf->AddPage();
 
-        // Layout: 12 boletos por página
         $ticketWidth  = 50;
         $ticketHeight = 85;
-
         $colX = [5, 55, 105, 155];
         $rowY = [5, 90, 175];
 
         $i = 0;
-
         foreach ($rows as $r) {
-
             $user   = trim($r[0] ?? '');
             $name   = trim($r[1] ?? '');
             $center = trim($r[2] ?? '');
 
-            // Guardar en la BD
             if ($user !== '' || $name !== '') {
                 $stmt = $this->mysqli->prepare("INSERT INTO tickets(sap, name, center) VALUES(?,?,?)");
                 if ($stmt) {
@@ -149,11 +135,8 @@ class TicketModel {
                 }
             }
 
-            // ----------------------------------------------------------------
-            // GENERAR QR
-            // ----------------------------------------------------------------
+            // Generar QR
             $qrData = trim("$user|$name|$center");
-
             $builder = new Builder();
             $result = $builder
                 ->writer(new PngWriter())
@@ -161,64 +144,49 @@ class TicketModel {
                 ->size(300)
                 ->margin(0)
                 ->build();
-
             $qrFile = $this->storageQr . "/qr_$i.png";
             $result->saveToFile($qrFile);
 
-            // Posiciones
             $col = $i % 4;
             $row = intdiv($i % 12, 4);
-
-            if ($i > 0 && $i % 12 == 0) {
-                $pdf->AddPage();
-            }
+            if ($i > 0 && $i % 12 == 0) $pdf->AddPage();
 
             $x = $colX[$col];
             $y = $rowY[$row];
 
-            // Fondo del boleto
+            // Fondo
             $plantilla = __DIR__ . '/../../storage/qr/ticket.png';
             $pdf->Image($plantilla, $x, $y, $ticketWidth, $ticketHeight);
 
             // QR centrado
             $qrSize = 25;
-            $qrX = $x + ($ticketWidth / 2) - ($qrSize / 2);
-            $qrY = $y + 24;
-
+            $qrX = $x + ($ticketWidth/2) - ($qrSize/2);
+            $qrY = $y + 26;
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
-            // ----------------------------------------------------------------
-            // NOMBRE EN 2-3 LÍNEAS AJUSTABLES
-            // ----------------------------------------------------------------
-            $resultText = $this->fitText($pdf, $name, 11, $ticketWidth);
+            // Nombre ajustado con 1 cm de margen arriba del texto (debajo del QR)
+            $spaceBelowQR = 10; // 1 cm
+            $startY = $qrY + $qrSize + $spaceBelowQR;
 
+            $maxTextHeight = $ticketHeight - ($startY - $y) - 5; // margen inferior
+
+            $resultText = $this->fitTextWithHeight($pdf, $name, 11, $ticketWidth - 4, $maxTextHeight);
             $pdf->SetFont('Arial', '', $resultText['font']);
-            $pdf->SetTextColor(0, 0, 0);
+            $pdf->SetTextColor(0,0,0);
 
-            // Punto inicial del texto
-            $startY = $y + 58;
-
+            $lineHeight = 5;
             foreach ($resultText['lines'] as $index => $line) {
-                $pdf->SetXY($x, $startY + ($index * 5));
-                $pdf->Cell($ticketWidth, 5, $line, 0, 1, 'C');
+                $pdf->SetXY($x + 2, $startY + ($index * $lineHeight));
+                $pdf->Cell($ticketWidth - 4, $lineHeight, $line, 0, 1, 'C');
             }
 
-            // Limpiar QR temporal
             if (file_exists($qrFile)) @unlink($qrFile);
-
             $i++;
         }
 
-        // ----------------------------------------------------------------
-        // GUARDAR PDF
-        // ----------------------------------------------------------------
         $pdfFile = $this->storagePdf . '/boletos.pdf';
         $pdf->Output('F', $pdfFile);
-
-        if (!file_exists($pdfFile)) {
-            throw new Exception("No se pudo crear el PDF");
-        }
-
+        if (!file_exists($pdfFile)) throw new Exception("No se pudo crear el PDF");
         return $pdfFile;
     }
 }
