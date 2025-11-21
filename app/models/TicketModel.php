@@ -212,7 +212,7 @@ private function fitText($pdf, $text, $maxFont = 11)
             $pdf->SetTextColor(0, 0, 0);
 
             // Punto inicial del texto
-            $startY = $y + 60;
+            $startY = $y + 63;
 
             foreach ($resultText['lines'] as $index => $line) {
                 $pdf->SetXY($x, $startY + ($index * 5));
