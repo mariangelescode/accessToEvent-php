@@ -45,54 +45,57 @@ class TicketModel {
     // --------------------------------------------------------------------
     // fitText: divide texto en 2-3 líneas, reduce fuente si es necesario
     // --------------------------------------------------------------------
-    private function fitText($pdf, $text, $maxFont = 11, $ticketWidth = 50) {
-        // Convertir caracteres
-        $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
+    private function fitText($pdf, $text, $maxFont = 11, $ticketTextWidth = 46) {
+    $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
+    if ($text === "") return ["lines" => ["—","—","—"], "font" => $maxFont];
 
-        if ($text === "") {
-            return ["lines" => ["—","—","—"], "font" => $maxFont];
-        }
+    $fontSize = $maxFont;
+    $maxLines = 3;
 
-        $lines = [];
-        $fontSize = $maxFont;
-        $maxLines = 3;
+    while ($fontSize >= 6) {
+        $pdf->SetFont('Arial', '', $fontSize);
+        $lines = explode("\n", $pdf->WordWrap($text, $ticketTextWidth));
 
-        while ($fontSize >= 6) { // No bajar demasiado la fuente
-            $pdf->SetFont('Arial', '', $fontSize);
-            $words = preg_split('/\s+/', $text);
-            $lines = [];
-            $currentLine = '';
-
-            foreach ($words as $word) {
-                $testLine = $currentLine === '' ? $word : $currentLine . ' ' . $word;
-                if ($pdf->GetStringWidth($testLine) <= ($ticketWidth - 4)) {
-                    $currentLine = $testLine;
-                } else {
-                    // Si una sola palabra es más larga que el ancho, partirla
-                    if ($currentLine === '') {
-                        $splitWord = str_split($word, max(1, floor(strlen($word)/2)));
-                        $lines[] = $splitWord[0];
-                        $currentLine = $splitWord[1] ?? '';
-                    } else {
-                        $lines[] = $currentLine;
-                        $currentLine = $word;
-                    }
-                }
-            }
-            if ($currentLine !== '') $lines[] = $currentLine;
-
-            if (count($lines) <= $maxLines) break; // Caben en 3 líneas
-            $fontSize--; // Reducir fuente y reintentar
-        }
-
-        // Ajustar a 3 líneas exactas
-        while (count($lines) < $maxLines) $lines[] = "—";
-        if (count($lines) > $maxLines) {
-            $lines = [$lines[0], $lines[1], implode(' ', array_slice($lines, 2))];
-        }
-
-        return ["lines" => $lines, "font" => $fontSize];
+        // Si no cabe en maxLines, reducir la fuente
+        if (count($lines) <= $maxLines) break;
+        $fontSize--;
     }
+
+    // Ajustar exactamente a 3 líneas
+    while (count($lines) < $maxLines) $lines[] = "—";
+    if (count($lines) > $maxLines) {
+        $lines = array_slice($lines, 0, $maxLines-1);
+        $lines[] = implode(' ', array_slice($lines, $maxLines-1));
+    }
+
+    return ["lines" => $lines, "font" => $fontSize];
+}
+
+// Función de ayuda para WordWrap
+private function WordWrap($pdf, $text, $maxWidth) {
+    $words = explode(' ', $text);
+    $lines = [];
+    $currentLine = '';
+    foreach ($words as $word) {
+        $testLine = $currentLine === '' ? $word : $currentLine.' '.$word;
+        if ($pdf->GetStringWidth($testLine) <= $maxWidth) {
+            $currentLine = $testLine;
+        } else {
+            if ($currentLine === '') {
+                // palabra muy larga, partir
+                $split = str_split($word, 5);
+                $lines[] = $split[0];
+                $currentLine = $split[1] ?? '';
+            } else {
+                $lines[] = $currentLine;
+                $currentLine = $word;
+            }
+        }
+    }
+    if ($currentLine !== '') $lines[] = $currentLine;
+    return implode("\n", $lines);
+}
+
 
     // --------------------------------------------------------------------
     // GENERAR BOLETOS DESDE CSV
