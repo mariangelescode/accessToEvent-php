@@ -45,7 +45,7 @@ class TicketModel {
     // --------------------------------------------------------------------
     // FUNCIÓN fitText: Ajusta texto a ancho y máximo 2 líneas
     // --------------------------------------------------------------------
-    private function fitText($pdf, $text, $maxWidth, $maxFont = 12, $minFont = 6) {
+    private function fitText($pdf, $text, $maxWidth, $maxFont = 12, $minFont = 5) {
         $text = iconv('UTF-8','ISO-8859-1//TRANSLIT',$text);
         $words = explode(" ", $text);
 
@@ -56,8 +56,10 @@ class TicketModel {
             $current = "";
 
             foreach ($words as $w) {
-                if ($pdf->GetStringWidth(trim($current . " " . $w)) <= $maxWidth) {
-                    $current .= " " . $w;
+                $test = trim($current . " " . $w);
+
+                if ($pdf->GetStringWidth($test) <= $maxWidth) {
+                    $current = $test;
                 } else {
                     $lines[] = trim($current);
                     $current = $w;
@@ -68,13 +70,23 @@ class TicketModel {
                 $lines[] = trim($current);
             }
 
+            // Máximo 2 líneas permitidas
             if (count($lines) <= 2) {
-                return $lines; // máximo 2 líneas
+                return [
+                    "lines" => $lines,
+                    "font"  => $font
+                ];
             }
         }
 
-        return [$text]; // fallback
+        // Si todo falla, fuerza recorte:
+        $pdf->SetFont('Arial','',$minFont);
+        return [
+            "lines" => [substr($text, 0, 30)],
+            "font" => $minFont
+        ];
     }
+
 
     public function createTicketsFromCSV($csvFile) {
 
@@ -182,14 +194,15 @@ class TicketModel {
             // ----------------------------------------------------------------
             //  TEXTO DEL NOMBRE – MÁXIMO 2 LÍNEAS
             // ----------------------------------------------------------------
-            $maxTextWidth = $ticketWidth - 10; // margen lateral
-            $lines = $this->fitText($pdf, $name ?: '-', $maxTextWidth);
+            // Texto del nombre con ajuste inteligente
+            $resultText = $this->fitText($pdf, $name ?: '-', $maxTextWidth);
 
+            $pdf->SetFont('Arial', '', $resultText['font']);
             $pdf->SetTextColor(0, 0, 0);
 
             $startY = $y + $ticketHeight - 20;
 
-            foreach ($lines as $idx => $line) {
+            foreach ($resultText['lines'] as $idx => $line) {
                 $pdf->SetXY($x, $startY + ($idx * 4));
                 $pdf->Cell($ticketWidth, 4, $line, 0, 1, 'C');
             }
