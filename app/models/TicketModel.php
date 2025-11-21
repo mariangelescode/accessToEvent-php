@@ -45,10 +45,9 @@ class TicketModel {
     // --------------------------------------------------------------------
     // fitText: FORMA B (siempre 3 líneas pase lo que pase)
     // --------------------------------------------------------------------
-    private function fitText($pdf, $text, $maxFont = 11) {
-
-        // Convertir caracteres
-        $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
+    private function fitText($pdf, $text, $maxFont = 11)
+    {
+        $text = trim(iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $text));
 
         if ($text === "") {
             return [
@@ -57,20 +56,32 @@ class TicketModel {
             ];
         }
 
-        $words = explode(" ", $text);
-        $lines = [];
+        $pdf->SetFont('Arial', '', $maxFont);
 
-        // EXACTAMENTE 3 LÍNEAS
-        if (count($words) >= 3) {
-            $lines = [
-                $words[0],
-                $words[1],
-                implode(" ", array_slice($words, 2))
-            ];
-        } elseif (count($words) == 2) {
-            $lines = [$words[0], $words[1], "—"];
-        } elseif (count($words) == 1) {
-            $lines = [$words[0], "—", "—"];
+        $maxWidth = 46; // ancho útil dentro del ticket (50mm menos márgenes)
+        $words = explode(" ", $text);
+
+        $lines = [""];
+        $lineIndex = 0;
+
+        foreach ($words as $word) {
+
+            $testLine = ($lines[$lineIndex] === "")
+                ? $word
+                : $lines[$lineIndex] . " " . $word;
+
+            if ($pdf->GetStringWidth($testLine) <= $maxWidth) {
+                $lines[$lineIndex] = $testLine;
+            } else {
+                $lineIndex++;
+                if ($lineIndex >= 3) break; // Máximo 3 líneas
+                $lines[$lineIndex] = $word;
+            }
+        }
+
+        // Asegurar siempre 3 líneas
+        while (count($lines) < 3) {
+            $lines[] = "—";
         }
 
         return [
@@ -78,6 +89,7 @@ class TicketModel {
             "font"  => $maxFont
         ];
     }
+
 
     // --------------------------------------------------------------------
     // GENERAR BOLETOS DESDE CSV
