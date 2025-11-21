@@ -161,13 +161,16 @@ class TicketModel {
             $pdf->Image($qrFile, $qrX, $qrY, $qrSize, $qrSize);
 
             // Nombre ajustado
-            $resultText = $this->fitText($pdf, $name, 11, $ticketWidth - 4); // 2 mm margen
+            $resultText = $this->fitText($pdf, $name, 11, $ticketWidth - 4);
             $pdf->SetFont('Arial', '', $resultText['font']);
             $pdf->SetTextColor(0,0,0);
 
-            $startY = $y + 58;
+            // --- NUEVO: dejar 20 mm (2 cm) de espacio entre QR y nombre ---
+            $spaceAboveName = 20;
+            $startY = $qrY + $qrSize + $spaceAboveName;
+
             foreach ($resultText['lines'] as $index => $line) {
-                $pdf->SetXY($x + 2, $startY + ($index*5)); // 2 mm margen
+                $pdf->SetXY($x + 2, $startY + ($index*5));
                 $pdf->Cell($ticketWidth - 4, 5, $line, 0, 1, 'C');
             }
 
