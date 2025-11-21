@@ -43,47 +43,55 @@ class TicketModel {
     }
 
     // --------------------------------------------------------------------
-    // fitText: divide texto en 2 o 3 líneas según ancho disponible
+    // fitText: divide texto en 2-3 líneas, reduce fuente si es necesario
     // --------------------------------------------------------------------
     private function fitText($pdf, $text, $maxFont = 11, $ticketWidth = 50) {
         // Convertir caracteres
         $text = trim(iconv('UTF-8','ISO-8859-1//TRANSLIT',$text));
 
         if ($text === "") {
-            return [
-                "lines" => ["—", "—", "—"],
-                "font"  => $maxFont
-            ];
+            return ["lines" => ["—","—","—"], "font" => $maxFont];
         }
 
-        $pdf->SetFont('Arial', '', $maxFont);
-        $words = explode(" ", $text);
         $lines = [];
-        $currentLine = '';
+        $fontSize = $maxFont;
+        $maxLines = 3;
 
-        foreach ($words as $word) {
-            $testLine = $currentLine === '' ? $word : $currentLine . ' ' . $word;
-            if ($pdf->GetStringWidth($testLine) < ($ticketWidth - 4)) {
-                $currentLine = $testLine;
-            } else {
-                $lines[] = $currentLine;
-                $currentLine = $word;
+        while ($fontSize >= 6) { // No bajar demasiado la fuente
+            $pdf->SetFont('Arial', '', $fontSize);
+            $words = preg_split('/\s+/', $text);
+            $lines = [];
+            $currentLine = '';
+
+            foreach ($words as $word) {
+                $testLine = $currentLine === '' ? $word : $currentLine . ' ' . $word;
+                if ($pdf->GetStringWidth($testLine) <= ($ticketWidth - 4)) {
+                    $currentLine = $testLine;
+                } else {
+                    // Si una sola palabra es más larga que el ancho, partirla
+                    if ($currentLine === '') {
+                        $splitWord = str_split($word, max(1, floor(strlen($word)/2)));
+                        $lines[] = $splitWord[0];
+                        $currentLine = $splitWord[1] ?? '';
+                    } else {
+                        $lines[] = $currentLine;
+                        $currentLine = $word;
+                    }
+                }
             }
+            if ($currentLine !== '') $lines[] = $currentLine;
+
+            if (count($lines) <= $maxLines) break; // Caben en 3 líneas
+            $fontSize--; // Reducir fuente y reintentar
         }
-        if ($currentLine !== '') $lines[] = $currentLine;
 
-        // Asegurar 3 líneas exactas (rellenar con guiones si faltan)
-        while (count($lines) < 3) $lines[] = "—";
-
-        // Si son más de 3 líneas, combinar la última
-        if (count($lines) > 3) {
+        // Ajustar a 3 líneas exactas
+        while (count($lines) < $maxLines) $lines[] = "—";
+        if (count($lines) > $maxLines) {
             $lines = [$lines[0], $lines[1], implode(' ', array_slice($lines, 2))];
         }
 
-        return [
-            "lines" => $lines,
-            "font"  => $maxFont
-        ];
+        return ["lines" => $lines, "font" => $fontSize];
     }
 
     // --------------------------------------------------------------------
