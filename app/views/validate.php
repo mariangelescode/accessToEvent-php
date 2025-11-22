@@ -18,7 +18,9 @@
   
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="../../public/script/script.js"></script>
+  <!-- <script src="../../public/script/script.js"></script> -->
+   <script src="/access/public/script/script.js"></script>
+
 
 </body>
 </html>
