@@ -41,6 +41,11 @@ class ValidateController {
     }
 
     public function index() {
+        // include __DIR__ . '/../views/validate.php';
+        // Obtener número de registrados
+        $totalRegistrados = $this->model->countRegistered();
+
+        // Enviar a la vista
         include __DIR__ . '/../views/validate.php';
     }
 
