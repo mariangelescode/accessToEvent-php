@@ -41,4 +41,11 @@ class ValidateModel {
         $stmt->execute();
         $stmt->close();
     }
+
+    public function countRegistered() {
+        $sql = "SELECT COUNT(*) AS total FROM registro";
+        $res = $this->mysqli->query($sql);
+        $row = $res->fetch_assoc();
+        return $row['total'] ?? 0;
+    }
 }

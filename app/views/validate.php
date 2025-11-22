@@ -8,6 +8,10 @@
 <body>
   
   <p class="title__validate">Escanea el código QR</p>
+  
+  <p class="counter">
+      Registrados: <b><?php echo $totalRegistrados ?? 0; ?></b>
+  </p>
   <div id="reader"></div>
   
   <script src="https://unpkg.com/html5-qrcode"></script>
