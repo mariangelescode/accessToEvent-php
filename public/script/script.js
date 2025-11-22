@@ -20,9 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function processQR(qr) {
-const base = window.location.origin + "/access/public/index.php?p=validate_check";
 
-    fetch(base, {
+    fetch("https://developermpercastre.com/access/public/index.php?p=validate_check", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: "qr=" + encodeURIComponent(qr)
