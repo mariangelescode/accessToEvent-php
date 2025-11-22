@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function processQR(qr) {
 
-    fetch("/access/public/index.php?p=validate_check", {
+    fetch("https://developermpercastre.com/access/public/index.php?p=validate_check", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: "qr=" + encodeURIComponent(qr)
