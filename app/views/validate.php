@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Validar QR</title>
-<link rel="stylesheet" href="../../public/css/styles.css">
+<!-- <link rel="stylesheet" href="../../public/css/styles.css"> -->
+ <link rel="stylesheet" href="/access/public/css/styles.css">
+
 </head>
 <body>
   
