@@ -69,57 +69,53 @@ form{
     margin-bottom: 15px;
     font-weight: bold;
     color: #0c3c78;
-} */
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: "Poppins", sans-serif;
-        background: linear-gradient(
-            rgba(0, 0, 40, 0.55),
-            rgba(0, 0, 40, 0.65)
-        ), url("https://images.unsplash.com/photo-1544652478-6653e09f18a2?auto=format&fit=crop&w=1400&q=80");
-        background-size: cover;
-        background-position: center;
-        color: #fff;
-        text-align: center;
-        min-height: 100vh;
-    }
+} */body {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    background: #0b1b39; /* Azul navideño */
+    color: #ffffff; /* Texto blanco */
+    text-align: center;
+}
 
-    .container {
-        margin-top: 40px;
-        padding: 20px;
-    }
+.title__validate {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-top: 25px;
+    color: #ffffff;
+    text-shadow: 0px 0px 8px rgba(255,255,255,0.25);
+}
 
-    .title {
-        font-size: 28px;
-        font-weight: 600;
-        text-shadow: 0 2px 6px rgba(0,0,0,0.4);
-        animation: glow 2s infinite alternate;
-    }
+.counter {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: #d8e1f0; /* Plata suave */
+}
 
-    @keyframes glow {
-        from { text-shadow: 0 0 5px #ff4d4d; }
-        to   { text-shadow: 0 0 15px #ffd700; }
-    }
+.counter b {
+    color: #c7a94f; /* Dorado elegante */
+}
 
-    .counter-box {
-        margin: 20px auto;
-        padding: 12px 20px;
-        background: rgba(255,255,255,0.15);
-        border-radius: 15px;
-        width: 80%;
-        font-size: 18px;
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255,255,255,0.3);
-    }
+#reader {
+    width: 90%;
+    max-width: 360px;
+    margin: 25px auto;
+    border-radius: 15px;
+    padding: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(199, 169, 79, 0.35); /* Dorado translúcido */
+    box-shadow: 0 0 12px rgba(199, 169, 79, 0.3);
+}
 
-    #reader {
-        width: 90%;
-        max-width: 350px;
-        margin: 30px auto;
-        background: rgba(255,255,255,0.15);
-        border-radius: 15px;
-        padding: 10px;
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255,255,255,0.3);
-    }
+/* Ajuste para los modales de SweetAlert */
+.swal2-title {
+    color: #0b1b39 !important;
+}
+
+.swal2-html-container {
+    color: #333 !important;
+}
+
+.swal2-popup {
+    border-radius: 14px !important;
+}
