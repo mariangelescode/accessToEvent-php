@@ -75,9 +75,9 @@ form{
         padding: 0;
         font-family: "Poppins", sans-serif;
         background: linear-gradient(
-            rgba(0, 0, 30, 0.6),
-            rgba(0, 0, 50, 0.6)
-        ), url("https://i.imgur.com/4LkTG2z.jpeg");
+            rgba(0, 0, 40, 0.55),
+            rgba(0, 0, 40, 0.65)
+        ), url("https://images.unsplash.com/photo-1544652478-6653e09f18a2?auto=format&fit=crop&w=1400&q=80");
         background-size: cover;
         background-position: center;
         color: #fff;
