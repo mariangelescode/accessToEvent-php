@@ -70,54 +70,89 @@ form{
     font-weight: bold;
     color: #0c3c78;
 } */
-
+/* === Fondo navideño azul marino === */
 body {
     margin: 0;
-    padding: 0;
-    font-family: "Poppins", sans-serif;
-    background: #0b1b39; /* Azul navideño */
-    color: #ffffff; /* Texto blanco */
-    text-align: center;
-}
-
-.title__validate {
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-top: 25px;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(180deg, #081428, #0c2349);
     color: #ffffff;
-    text-shadow: 0px 0px 8px rgba(255,255,255,0.25);
+    text-align: center;
+    padding: 0;
 }
 
-.counter {
-    font-size: 1.2rem;
-    margin-bottom: 15px;
-    color: #d8e1f0; /* Plata suave */
+/* Contenedor principal */
+#main-container {
+    width: 95%;
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 18px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.4);
+    backdrop-filter: blur(6px);
 }
 
-.counter b {
-    color: #c7a94f; /* Dorado elegante */
+/* Título grande */
+h1 {
+    font-size: 34px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #d5e9ff;
+    text-shadow: 0 0 8px rgba(255,255,255,0.2);
 }
 
+/* === Lector QR más grande para celular === */
 #reader {
-    width: 90%;
+    width: 100%;
     max-width: 360px;
-    margin: 25px auto;
-    border-radius: 15px;
-    padding: 10px;
-    background: rgba(255,255,255,0.05);
-    border: 2px solid rgba(199, 169, 79, 0.35); /* Dorado translúcido */
-    box-shadow: 0 0 12px rgba(199, 169, 79, 0.3);
+    margin: 0 auto;
+    border-radius: 18px;
+    overflow: hidden;
 }
 
-/* Ajuste para los modales de SweetAlert */
-.swal2-title {
-    color: #0b1b39 !important;
+/* Resultado */
+#result {
+    margin-top: 22px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #bcdcff;
 }
 
-.swal2-html-container {
-    color: #333 !important;
+/* Cuadro de mensaje */
+.message-box {
+    margin-top: 25px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-left: 8px solid #74b0ff;
+    border-radius: 14px;
+    color: #e6f0ff;
+    font-size: 20px;
 }
 
-.swal2-popup {
-    border-radius: 14px !important;
+/* Botón grande */
+button {
+    margin-top: 25px;
+    padding: 16px 30px;
+    background: #74b0ff;
+    border: none;
+    color: #0b1e3f;
+    font-weight: bold;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 20px;
+    width: 100%;
+}
+
+button:hover {
+    background: #9ccaff;
+}
+
+/* Ajustes extra para mejorar en móviles */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 36px;
+    }
+    .message-box {
+        font-size: 22px;
+    }
 }

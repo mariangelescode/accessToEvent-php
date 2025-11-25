@@ -17,17 +17,18 @@
       Registrados: <b><?php echo $totalRegistrados ?? 0; ?></b>
   </p>
   <div id="reader"></div> -->
-  <div class="container">
+  
+<div id="main-container">
+    <h1>Validación QR</h1>
 
-        <p class="title">🎄 Escanea tu Código QR 🎄</p>
+    <div id="reader"></div>
 
-        <div class="counter-box">
-            Registrados: <b><?php echo $totalRegistrados ?? 0; ?></b>
-        </div>
+    <div id="result"></div>
 
-        <div id="reader"></div>
+    <div id="message" class="message-box" style="display:none;"></div>
 
-    </div>
+    <button id="restartBtn" style="display:none;">Volver a escanear</button>
+</div>
   
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

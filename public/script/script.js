@@ -1,9 +1,99 @@
+// let qrScanner;
+// let isProcessing = false;
+
+// function onScanSuccess(qrMessage) {
+//     if (isProcessing) return;
+//     isProcessing = true;
+
+//     qrScanner.clear().then(() => {
+//         processQR(qrMessage);
+//     });
+// }
+
+// document.addEventListener("DOMContentLoaded", () => {
+//     qrScanner = new Html5QrcodeScanner(
+//         "reader",
+//         { fps: 10, qrbox: 250 },
+//         false
+//     );
+//     qrScanner.render(onScanSuccess);
+// });
+
+// function processQR(qr) {
+
+//     fetch("https://developermpercastre.com/access/public/index.php?p=validate_check", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: "qr=" + encodeURIComponent(qr)
+//     })
+//     .then(res => res.json())
+//     .then(data => {
+
+//         if (data.status === "error") {
+//             return Swal.fire({
+//                 icon: "error",
+//                 title: "Error",
+//                 text: data.message
+//             }).then(() => {
+//                 isProcessing = false;
+//                 restartScanner();
+//             });
+//         }
+
+//         if (data.status === "exists") {
+//             return Swal.fire({
+//                 icon: "warning",
+//                 title: "Ya registrado",
+//                 html: `<b>${data.data.name}</b><br>Centro: ${data.data.center}`
+//             }).then(() => {
+//                 isProcessing = false;
+//                 restartScanner();
+//             });
+//         }
+
+//         if (data.status === "success") {
+//             return Swal.fire({
+//                 icon: "success",
+//                 title: "Registrado",
+//                 html: `<b>${data.data.name}</b><br>Centro: ${data.data.center}`
+//             }).then(() => {
+//                 isProcessing = false;
+//                 restartScanner();
+//             });
+//         }
+
+//     })
+//     .catch(err => {
+//         console.error(err);
+//         Swal.fire({
+//             icon: "error",
+//             title: "Error",
+//             text: "Hubo un problema al validar el QR."
+//         }).then(() => {
+//             isProcessing = false;
+//             restartScanner();
+//         });
+//     });
+// }
+
+// function restartScanner() {
+//     setTimeout(() => {
+//         qrScanner.clear().then(() => {
+//             qrScanner.render(onScanSuccess);
+//         });
+//     }, 1000);
+// }
+
+
 let qrScanner;
 let isProcessing = false;
 
 function onScanSuccess(qrMessage) {
     if (isProcessing) return;
     isProcessing = true;
+
+    // Ocultar lector para mostrar mensajes
+    document.getElementById("reader").style.display = "none";
 
     qrScanner.clear().then(() => {
         processQR(qrMessage);
@@ -13,9 +103,13 @@ function onScanSuccess(qrMessage) {
 document.addEventListener("DOMContentLoaded", () => {
     qrScanner = new Html5QrcodeScanner(
         "reader",
-        { fps: 10, qrbox: 250 },
+        { 
+            fps: 10,
+            qrbox: { width: 300, height: 300 } // MÁS GRANDE PARA CELULAR
+        },
         false
     );
+
     qrScanner.render(onScanSuccess);
 });
 
@@ -29,57 +123,63 @@ function processQR(qr) {
     .then(res => res.json())
     .then(data => {
 
+        let icon = "info"; 
+        let title = "Aviso";
+        let html = "";
+
         if (data.status === "error") {
-            return Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: data.message
-            }).then(() => {
-                isProcessing = false;
-                restartScanner();
-            });
+            icon = "error";
+            title = "Error";
+            html = data.message;
         }
 
         if (data.status === "exists") {
-            return Swal.fire({
-                icon: "warning",
-                title: "Ya registrado",
-                html: `<b>${data.data.name}</b><br>Centro: ${data.data.center}`
-            }).then(() => {
-                isProcessing = false;
-                restartScanner();
-            });
+            icon = "warning";
+            title = "Ya registrado";
+            html = `<b>${data.data.name}</b><br>Centro: ${data.data.center}`;
         }
 
         if (data.status === "success") {
-            return Swal.fire({
-                icon: "success",
-                title: "Registrado",
-                html: `<b>${data.data.name}</b><br>Centro: ${data.data.center}`
-            }).then(() => {
-                isProcessing = false;
-                restartScanner();
-            });
+            icon = "success";
+            title = "Registrado";
+            html = `<b>${data.data.name}</b><br>Centro: ${data.data.center}`;
         }
+
+        return Swal.fire({
+            icon,
+            title,
+            html,
+            confirmButtonText: "Volver a escanear",
+            confirmButtonColor: "#74b0ff",
+        }).then(() => {
+            restartScanner();
+        });
 
     })
     .catch(err => {
         console.error(err);
+
         Swal.fire({
             icon: "error",
             title: "Error",
-            text: "Hubo un problema al validar el QR."
+            text: "Hubo un problema al validar el QR.",
+            confirmButtonText: "Reintentar",
+            confirmButtonColor: "#74b0ff"
         }).then(() => {
-            isProcessing = false;
             restartScanner();
         });
     });
 }
 
 function restartScanner() {
+    isProcessing = false;
+
+    // Mostrar de nuevo el lector QR
+    document.getElementById("reader").style.display = "block";
+
     setTimeout(() => {
         qrScanner.clear().then(() => {
             qrScanner.render(onScanSuccess);
         });
-    }, 1000);
+    }, 500);
 }
