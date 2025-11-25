@@ -11,12 +11,23 @@
 </head>
 <body>
   
-  <p class="title__validate">Escanea el código QR</p>
+  <!-- <p class="title__validate">Escanea el código QR</p>
   
   <p class="counter">
       Registrados: <b><?php echo $totalRegistrados ?? 0; ?></b>
   </p>
-  <div id="reader"></div>
+  <div id="reader"></div> -->
+  <div class="container">
+
+        <p class="title">🎄 Escanea tu Código QR 🎄</p>
+
+        <div class="counter-box">
+            Registrados: <b><?php echo $totalRegistrados ?? 0; ?></b>
+        </div>
+
+        <div id="reader"></div>
+
+    </div>
   
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
