@@ -174,10 +174,13 @@ function processQR(qr) {
             padding: '2.5rem',
             confirmButtonText: "Reintentar",
             confirmButtonColor: "#74b0ff",
-            customClass: {
-                confirmButton: 'big-btn'
+            didOpen: () => {
+                const btn = document.querySelector('.swal2-confirm');
+                btn.style.fontSize = '2em';
+                btn.style.padding = '20px 35px';
             }
         }).then(() => restartScanner());
+
 
     });
 }
