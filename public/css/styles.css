@@ -208,3 +208,8 @@ button:hover {
     font-size: 18px !important;
     padding: 12px 20px !important;
 }
+
+.big-btn {
+    font-size: 2em !important;
+    padding: 20px 35px !important;
+}
