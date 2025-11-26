@@ -141,13 +141,13 @@ function processQR(qr) {
         if (data.status === "exists") {
             icon = "warning";
             title = "<span style='font-size:2em'>Ya registrado</span>";
-            html = `<b>${data.data.name}</b><br><span style='font-size:2em'>Centro: ${data.data.center}</span>Centro: ${data.data.center}`;
+            html = `<b><span style='font-size:1em'>${data.data.name}</span></b><br><span style='font-size:1em'>Centro: ${data.data.center}</span>Centro: ${data.data.center}`;
         }
 
         if (data.status === "success") {
             icon = "success";
             title = "<span style='font-size:2em'>Registrado</span>";
-            html = `<b>${data.data.name}</b><br><span style='font-size:2em'>Centro: ${data.data.center}</span>`;
+            html = `<b>span style='font-size:1em'>${data.data.name}</span></b><br><span style='font-size:1em'>Centro: ${data.data.center}</span>`;
         }
 
         return Swal.fire({
