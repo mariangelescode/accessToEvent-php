@@ -134,20 +134,20 @@ function processQR(qr) {
 
         if (data.status === "error") {
             icon = "error";
-            title = "Error";
+            title = "<span style='font-size:2em'>Error</span>";
             html = data.message;
         }
 
         if (data.status === "exists") {
             icon = "warning";
-            title = "Ya registrado";
-            html = `<b>${data.data.name}</b><br>Centro: ${data.data.center}`;
+            title = "<span style='font-size:2em'>Ya registrado</span>";
+            html = `<b>${data.data.name}</b><br><span style='font-size:2em'>Centro: ${data.data.center}</span>Centro: ${data.data.center}`;
         }
 
         if (data.status === "success") {
             icon = "success";
-            title = "Registrado";
-            html = `<b>${data.data.name}</b><br>Centro: ${data.data.center}`;
+            title = "<span style='font-size:2em'>Registrado</span>";
+            html = `<b>${data.data.name}</b><br><span style='font-size:2em'>Centro: ${data.data.center}</span>`;
         }
 
         return Swal.fire({
@@ -169,32 +169,20 @@ function processQR(qr) {
 
         Swal.fire({
             icon: "error",
-            title: "Error",
-            text: "Hubo un problema al validar el QR.",
+            title: "<span style='font-size:2em'>Error</span>",
+            html: "<span style='font-size:2em'>Hubo un problema al validar el QR.</span>",
+            width: '50rem',
+            padding: '2.5rem',
             confirmButtonText: "Reintentar",
             confirmButtonColor: "#74b0ff",
             customClass: {
-                popup: 'big-popup',
-                title: 'big-title',
-                htmlContainer: 'big-text',
-                confirmButton: 'big-button'
+                confirmButton: 'big-btn'
             }
         }).then(() => restartScanner());
 
     });
 }
-Swal.fire({
-    icon: "error",
-    title: "<span style='font-size:2em'>Error</span>",
-    html: "<span style='font-size:2em'>Hubo un problema al validar el QR.</span>",
-    width: '50rem',
-    padding: '2.5rem',
-    confirmButtonText: "Reintentar",
-    confirmButtonColor: "#74b0ff",
-    customClass: {
-        confirmButton: 'big-btn'
-    }
-}).then(() => restartScanner());
+
 function restartScanner() {
     isProcessing = false;
 
