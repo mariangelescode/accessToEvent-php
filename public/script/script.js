@@ -141,7 +141,7 @@ function processQR(qr) {
         if (data.status === "exists") {
             icon = "warning";
             title = "<span style='font-size:2em'>Ya registrado</span>";
-            html = `<b><span style='font-size:1em'>${data.data.name}</span></b><br><span style='font-size:1em'>Centro: ${data.data.center}</span>Centro: ${data.data.center}`;
+            html = `<b><span style='font-size:1em'>${data.data.name}</span></b><br><span style='font-size:1em'>Centro: ${data.data.center}</span>`;
         }
 
         if (data.status === "success") {
@@ -154,6 +154,8 @@ function processQR(qr) {
             icon,
             title,
             html,
+            width: '50rem',
+            padding: '2.5rem',
             confirmButtonText: "Volver a escanear",
             confirmButtonColor: "#74b0ff",
             customClass: {
