@@ -147,7 +147,7 @@ function processQR(qr) {
         if (data.status === "success") {
             icon = "success";
             title = "<span style='font-size:2em'>Registrado</span>";
-            html = `<b>span style='font-size:1.7em'>${data.data.name}</span></b><br><span style='font-size:1.7em'>Centro: ${data.data.center}</span>`;
+            html = `<b><span style='font-size:1.7em'>${data.data.name}</span></b><br><span style='font-size:1.7em'>Centro: ${data.data.center}</span>`;
         }
 
         return Swal.fire({
@@ -158,8 +158,10 @@ function processQR(qr) {
             padding: '2.5rem',
             confirmButtonText: "Volver a escanear",
             confirmButtonColor: "#74b0ff",
-            customClass: {
-                confirmButton: 'big-butn'
+            didOpen: () => {
+                const btn = document.querySelector('.swal2-confirm');
+                btn.style.fontSize = '2em';
+                btn.style.padding = '20px 35px';
             }
         }).then(() => restartScanner());
     })
@@ -174,13 +176,10 @@ function processQR(qr) {
             padding: '2.5rem',
             confirmButtonText: "Reintentar",
             confirmButtonColor: "#74b0ff",
-            didOpen: () => {
-                const btn = document.querySelector('.swal2-confirm');
-                btn.style.fontSize = '2em';
-                btn.style.padding = '20px 35px';
+            customClass: {
+                confirmButton: 'big-btn'
             }
         }).then(() => restartScanner());
-
 
     });
 }
