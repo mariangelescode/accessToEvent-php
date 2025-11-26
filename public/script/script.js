@@ -159,7 +159,7 @@ function processQR(qr) {
             confirmButtonText: "Volver a escanear",
             confirmButtonColor: "#74b0ff",
             customClass: {
-                confirmButton: 'big-button'
+                confirmButton: 'big-butn'
             }
         }).then(() => restartScanner());
     })
