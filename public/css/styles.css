@@ -91,7 +91,7 @@ body {
     border-radius: 18px;
     box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(6px);
-    height: 35%;
+    height: 50%;
 }
 
 /* Título grande */
@@ -110,7 +110,7 @@ h1 {
     margin: 0 auto;
     border-radius: 18px;
     overflow: hidden;
-    height: 600px;
+    height: 75%;
     font-size: 2em;
 }
 
