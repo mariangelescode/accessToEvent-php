@@ -183,7 +183,19 @@ function processQR(qr) {
 
     });
 }
-
+Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Hubo un problema al validar el QR.",
+            confirmButtonText: "Reintentar",
+            confirmButtonColor: "#74b0ff",
+            customClass: {
+                popup: 'big-popup',
+                title: 'big-title',
+                htmlContainer: 'big-text',
+                confirmButton: 'big-button'
+            }
+        }).then(() => restartScanner());
 
 function restartScanner() {
     isProcessing = false;
