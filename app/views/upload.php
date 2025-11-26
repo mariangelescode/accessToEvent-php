@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <title>Subir Excel/CSV y generar boletossss</title>
-<link rel="stylesheet" href="../../public/css/styles.css">
+<link rel="stylesheet" href="../../public/css/styles.css?v=<?=time()?>">
 </head>
 <body>
   <div class="center">
