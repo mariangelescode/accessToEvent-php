@@ -148,7 +148,7 @@ button:hover {
 }
 
 /* Ajustes extra para mejorar en móviles */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
     h1 {
         font-size: 36px;
     }
