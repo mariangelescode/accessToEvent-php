@@ -170,6 +170,13 @@ function processQR(qr) {
         }).then(() => restartScanner());
     });
 }
+Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Hubo un problema al validar el QR.",
+            confirmButtonText: "Reintentar",
+            confirmButtonColor: "#74b0ff"
+        }).then(() => restartScanner());
 
 function restartScanner() {
     isProcessing = false;
