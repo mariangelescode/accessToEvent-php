@@ -92,7 +92,7 @@ function onScanSuccess(qrMessage) {
     if (isProcessing) return;
     isProcessing = true;
 
-    // Ocultar lector para mostrar mensajes
+    // Ocultar lector mientras sale el mensaje
     document.getElementById("reader").style.display = "none";
 
     qrScanner.clear().then(() => {
@@ -101,11 +101,16 @@ function onScanSuccess(qrMessage) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    // HACER EL LECTOR EXTRA GRANDE
+    const width = Math.min(window.innerWidth * 0.9, 400); 
+    const height = width;
+
     qrScanner = new Html5QrcodeScanner(
         "reader",
         { 
             fps: 10,
-            qrbox: { width: 300, height: 300 } // MÁS GRANDE PARA CELULAR
+            qrbox: { width, height }   // <-- AQUÍ SE AGRANDA
         },
         false
     );
@@ -151,10 +156,7 @@ function processQR(qr) {
             html,
             confirmButtonText: "Volver a escanear",
             confirmButtonColor: "#74b0ff",
-        }).then(() => {
-            restartScanner();
-        });
-
+        }).then(() => restartScanner());
     })
     .catch(err => {
         console.error(err);
@@ -165,16 +167,13 @@ function processQR(qr) {
             text: "Hubo un problema al validar el QR.",
             confirmButtonText: "Reintentar",
             confirmButtonColor: "#74b0ff"
-        }).then(() => {
-            restartScanner();
-        });
+        }).then(() => restartScanner());
     });
 }
 
 function restartScanner() {
     isProcessing = false;
 
-    // Mostrar de nuevo el lector QR
     document.getElementById("reader").style.display = "block";
 
     setTimeout(() => {
