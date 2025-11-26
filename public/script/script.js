@@ -187,7 +187,7 @@ Swal.fire({
     icon: "error",
     title: "Error",
     text: "Hubo un problema al validar el QR.",
-    width: '60rem',         // aumenta ancho
+    width: '50rem',         // aumenta ancho
     padding: '2.5rem',      // aumenta padding
     confirmButtonText: "Reintentar",
     confirmButtonColor: "#74b0ff"
