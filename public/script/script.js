@@ -186,7 +186,7 @@ function processQR(qr) {
 Swal.fire({
     icon: "error",
     title: "<span style='font-size:2em'>Error</span>",
-    html: "<span style='font-size:22px'>Hubo un problema al validar el QR.</span>",
+    html: "<span style='font-size:1em'>Hubo un problema al validar el QR.</span>",
     width: '50rem',
     padding: '2.5rem',
     confirmButtonText: "Reintentar",
