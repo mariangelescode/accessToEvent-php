@@ -177,3 +177,21 @@ button:hover {
 #html5-qrcode-anchor-scan-type-change{
     display: none;
 }
+
+.big-popup {
+    width: 400px !important;      /* ancho más grande */
+    padding: 25px !important;
+}
+
+.big-title {
+    font-size: 28px !important;   /* tamaño del título */
+}
+
+.big-text {
+    font-size: 20px !important;   /* tamaño del texto */
+}
+
+.big-button {
+    font-size: 18px !important;   /* tamaño botón */
+    padding: 12px 24px !important;
+}

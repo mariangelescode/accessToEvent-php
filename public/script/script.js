@@ -156,6 +156,12 @@ function processQR(qr) {
             html,
             confirmButtonText: "Volver a escanear",
             confirmButtonColor: "#74b0ff",
+            customClass: {
+                popup: 'big-popup',
+                title: 'big-title',
+                htmlContainer: 'big-text',
+                confirmButton: 'big-button'
+            }
         }).then(() => restartScanner());
     })
     .catch(err => {
@@ -166,17 +172,18 @@ function processQR(qr) {
             title: "Error",
             text: "Hubo un problema al validar el QR.",
             confirmButtonText: "Reintentar",
-            confirmButtonColor: "#74b0ff"
+            confirmButtonColor: "#74b0ff",
+            customClass: {
+                popup: 'big-popup',
+                title: 'big-title',
+                htmlContainer: 'big-text',
+                confirmButton: 'big-button'
+            }
         }).then(() => restartScanner());
+
     });
 }
-Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "Hubo un problema al validar el QR.",
-            confirmButtonText: "Reintentar",
-            confirmButtonColor: "#74b0ff"
-        }).then(() => restartScanner());
+
 
 function restartScanner() {
     isProcessing = false;
