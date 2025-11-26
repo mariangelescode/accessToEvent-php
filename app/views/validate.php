@@ -6,7 +6,7 @@
 <!-- <link rel="stylesheet" href="../../public/css/styles.css"> -->
  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
- <link rel="stylesheet" href="/access/public/css/styles.css?v=2">
+ <link rel="stylesheet" href="/access/public/css/styles.css?v==<?=time()?>">
 
 </head>
 <body>
