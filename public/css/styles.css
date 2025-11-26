@@ -195,3 +195,16 @@ button:hover {
     font-size: 18px !important;   /* tamaño botón */
     padding: 12px 24px !important;
 }
+
+.swal-title-big {
+    font-size: 28px !important;
+}
+
+.swal-text-big {
+    font-size: 20px !important;
+}
+
+.swal-button-big {
+    font-size: 18px !important;
+    padding: 12px 20px !important;
+}

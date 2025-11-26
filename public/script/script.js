@@ -185,14 +185,16 @@ function processQR(qr) {
 }
 Swal.fire({
     icon: "error",
-    title: "Error",
-    text: "Hubo un problema al validar el QR.",
-    width: '50rem',         // aumenta ancho
-    padding: '2.5rem',      // aumenta padding
+    title: "<span style='font-size:32px'>Error</span>",
+    html: "<span style='font-size:22px'>Hubo un problema al validar el QR.</span>",
+    width: '50rem',
+    padding: '2.5rem',
     confirmButtonText: "Reintentar",
-    confirmButtonColor: "#74b0ff"
+    confirmButtonColor: "#74b0ff",
+    customClass: {
+        confirmButton: 'big-btn'
+    }
 }).then(() => restartScanner());
-
 function restartScanner() {
     isProcessing = false;
 
