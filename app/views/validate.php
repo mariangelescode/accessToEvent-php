@@ -20,6 +20,9 @@
   
 <div id="main-container">
     <h1>Validación QR</h1>
+    <p class="counter">
+        Registrados: <b><?php echo $totalRegistrados ?? 0; ?></b>
+    </p>
 
     <div id="reader"></div>
 
