@@ -1,16 +1,19 @@
 <?php
-$page = $_GET['p'] ?? ''; // igual que tu estructura actual con ?p=upload o ?p=validate
+
+$page = $_GET['p'] ?? '';
 
 switch ($page) {
+
     case 'validate':
         require_once __DIR__ . '/../app/controllers/ValidateController.php';
         $controller = new ValidateController();
-        $controller->index(); // método principal del lector QR
+        $controller->index();
         break;
+
     case 'validate_check':
         require_once __DIR__ . '/../app/controllers/ValidateController.php';
         $controller = new ValidateController();
-        $controller->check(); // nuevo método para procesar el QR
+        $controller->check();
         break;
 
     default:
