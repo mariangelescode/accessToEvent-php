@@ -1,4 +1,8 @@
 <?php
+// INSERTAR TEMPORALMENTE EN LA PRIMERA LÍNEA DE public/index.php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 $page = $_GET['p'] ?? ''; // igual que tu estructura actual con ?p=upload o ?p=validate
 
 switch ($page) {
