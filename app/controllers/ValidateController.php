@@ -6,7 +6,7 @@ require_once __DIR__ . '/../models/ValidateModel.php';
 use Dotenv\Dotenv;
 
 class ValidateController {
-    private array $config;
+    private $config; // 👈 Eliminamos la declaración estricta 'array' para aceptar objetos o arrays
     private ValidateModel $model;
 
     public function __construct() {
@@ -16,17 +16,33 @@ class ValidateController {
         $configPath = $_ENV['CONFIG_PATH'] ?? null;
 
         if (!$configPath || !file_exists($configPath)) {
+            header('Content-Type: application/json');
             http_response_code(500);
-            die(json_encode([
+            echo json_encode([
                 "status" => "error", 
-                "message" => "Error de configuración: No se encontró config.php"
-            ]));
+                "message" => "Error de configuración: No se encontró config.php en " . ($configPath ?? 'Ruta no definida')
+            ]);
+            exit;
         }
 
-        $this->config = require $configPath;
+        // Cargamos la configuración (objeto o array)
+        $loadedConfig = require $configPath;
         
-        // 💡 Instanciamos el modelo UNA sola vez para reutilizar la conexión a la BD
-        $this->model = new ValidateModel($this->config);
+        // Convertimos a array si viene como objeto/stdClass
+        $this->config = is_object($loadedConfig) ? (array) $loadedConfig : $loadedConfig;
+
+        try {
+            // Instanciamos el modelo una sola vez
+            $this->model = new ValidateModel($this->config);
+        } catch (\Throwable $e) {
+            header('Content-Type: application/json');
+            http_response_code(500);
+            echo json_encode([
+                "status" => "error", 
+                "message" => "Error de base de datos: " . $e->getMessage()
+            ]);
+            exit;
+        }
     }
 
     public function index(): void {
@@ -35,7 +51,7 @@ class ValidateController {
     }
 
     public function check(): void {
-        // Manejo y liberación rápida de sesión para evitar bloqueos (Session Locking)
+        // Manejo y liberación rápida de sesión
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -43,9 +59,9 @@ class ValidateController {
         $lastScan = $_SESSION['last_scan'] ?? 0;
         $now = time();
 
-        // 🔒 Anti-spam (Sintaxis corregida)
+        // 🔒 Anti-spam
         if (($now - $lastScan) < 2) {
-            session_write_close(); // Liberamos el archivo de sesión inmediatamente
+            session_write_close();
             
             header('Content-Type: application/json');
             http_response_code(429);
@@ -67,7 +83,6 @@ class ValidateController {
             return;
         }
 
-        // Parseo seguro del QR
         $parts = array_map('trim', explode('|', $qr));
         if (count($parts) < 3) {
             echo json_encode([
@@ -79,14 +94,17 @@ class ValidateController {
 
         [$user, $name, $center] = $parts;
 
+        // 1. Validar ticket existente
         $ticket = $this->model->findTicket($user);
-
         if (!$ticket) {
             echo json_encode(["status" => "error", "message" => "Usuario no encontrado"]);
             return;
         }
 
-        if ($this->model->alreadyRegistered($user)) {
+        // 2. Intentar registrar (Aprovecha el índice UNIQUE de MySQL)
+        $registerStatus = $this->model->registerUser($user, $ticket['name'], $ticket['center']);
+
+        if ($registerStatus === 'exists') {
             echo json_encode([
                 "status" => "exists",
                 "message" => "⚠️ Usuario ya registrado anteriormente",
@@ -95,7 +113,13 @@ class ValidateController {
             return;
         }
 
-        $this->model->registerUser($user, $ticket['name'], $ticket['center']);
+        if ($registerStatus === 'error') {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Ocurrió un error al guardar el registro en la base de datos"
+            ]);
+            return;
+        }
 
         echo json_encode([
             "status" => "success",
