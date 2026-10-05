@@ -30,6 +30,7 @@ class ValidateModel {
      */
     public function findTicket(string $user): ?array {
         $stmt = $this->mysqli->prepare("SELECT sap, name, center FROM tickets WHERE sap = ? LIMIT 1");
+        var_dump($stmt);
         $stmt->bind_param("s", $user);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
